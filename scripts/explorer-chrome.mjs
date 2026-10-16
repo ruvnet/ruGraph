@@ -24,13 +24,22 @@ try{
   result=r.result?.value;if(result&&result!=='RUNNING')break;await sleep(50);
  }
  if(!result?.startsWith('PASS '))throw Error(result||'Browser test timed out');
- console.log(result);
+ await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]},sessionId);
+ let reduced=false;
+ for(let i=0;i<100;i++){
+  const r=await send('Runtime.evaluate',{expression:'document.getElementById("app").contentDocument.getElementById("motion").getAttribute("aria-pressed")==="false" && document.getElementById("app").contentDocument.getAnimations().filter(a=>a.playState==="running").length===0',returnByValue:true},sessionId);
+  if(r.result?.value){reduced=true;break;}await sleep(30);
+ }
+ if(!reduced)throw Error('System reduced motion did not stop animation');
+ console.log(result);console.log('PASS system reduced motion stops all scene animations');
+ await send('Emulation.setEmulatedMedia',{features:[]},sessionId);
  if(process.env.RUGRAPH_SCREENSHOT){
   // Capture the actual app at desktop and mobile sizes after its acceptance run.
   await send('Page.navigate',{url:new URL('../dist/index.html',process.argv[2]).href},sessionId);await sleep(1500);
   await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false},sessionId);
   const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false},sessionId);await writeFile(process.env.RUGRAPH_SCREENSHOT,Buffer.from(shot.data,'base64'));
   await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true},sessionId);
+  await send('Runtime.evaluate',{expression:'document.getElementById("stage").scrollIntoView({block:"start",behavior:"instant"})'},sessionId);await sleep(100);
   const small=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false},sessionId);await writeFile(process.env.RUGRAPH_SCREENSHOT.replace('.png','-mobile.png'),Buffer.from(small.data,'base64'));
  }
 }catch(error){console.error(error.stack);process.exitCode=1;}

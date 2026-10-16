@@ -4,7 +4,7 @@ Live tutorial: https://ruvnet.github.io/ruGraph/
 
 A browser-local tutorial and explorer for the real Rust WASM runtime. Six lessons explain dependency traversal, contradictory observations, expiry, grants, exact cosine retrieval and counterfactual sensitivity.
 
-Edit a program or its JSON inputs, select graph nodes, inspect evidence, replay receipts and export a receipt. The dark canvas and instrument layout follow the RuVector Explorer. Animation illustrates dependency links; only actual runtime decisions color evidence status.
+Edit a program or its JSON inputs, select graph nodes, inspect evidence, replay receipts and export a receipt. The orbital canvas, curved signal paths, scanning beam and rotating node rings follow the RuVector Explorer palette. Phones use a portrait graph, 44 px touch targets, a lesson picker and a persistent Run dock. Motion can be paused and respects system reduced motion preferences. Animation illustrates dependency links; only actual runtime decisions color evidence status.
 
 ## Build and run
 

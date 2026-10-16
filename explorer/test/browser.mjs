@@ -26,7 +26,20 @@ try{
  frame.contentDocument.querySelector('#node-list button').click();assert($('node-detail').textContent.includes('db-error-1'),'witness inspection');
  frame.contentDocument.querySelector('[data-result=receipt]').click();assert(!$('receipt-panel').hidden&&$('receipt-output').textContent.includes('receipt_hash'),'receipt inspection');
  const width=frame.contentDocument.documentElement.scrollWidth;assert(width<=1440,'desktop has no horizontal overflow');
- frame.width='390';await pause();assert(frame.contentDocument.documentElement.scrollWidth<=390,'mobile has no horizontal overflow');
+ for(const size of [320,390,768]){
+  frame.width=String(size);await pause();await pause();assert(frame.contentDocument.documentElement.scrollWidth<=size,`no horizontal overflow at ${size}px`);
+ }
+ frame.width='390';await wait(()=>$('graph').getAttribute('viewBox')==='0 0 600 750','portrait resize');
+ assert($('graph').getAttribute('viewBox')==='0 0 600 750','portrait graph layout on phones');
+ const touch=$('nodes').querySelector('.hit-area').getBoundingClientRect();assert(touch.width>=44&&touch.height>=44,'graph nodes have 44px touch targets');
+ assert($('next-lesson').getBoundingClientRect().height>=44&&$('quick-run').getBoundingClientRect().height>=44,'mobile controls have 44px targets');
+ $('next-lesson').click();assert($('lesson-select').value==='1','mobile next lesson');
+ $('previous-lesson').click();assert($('lesson-select').value==='0','mobile previous lesson');
+ change('lesson-select','1','change');await run();assert($('decisions').textContent.includes('conflicting'),'mobile lesson picker executes');
+ $('motion').click();assert($('stage').classList.contains('paused')&&frame.contentDocument.body.classList.contains('motion-paused'),'motion switch pauses scene and atmosphere');
+ $('motion').click();assert(!$('stage').classList.contains('paused'),'motion resumes');
+ const before=$('world').getAttribute('transform');$('zoom-in').click();assert($('world').getAttribute('transform')!==before,'touch zoom');$('fit').click();
+ $('quick-run').click();await wait(()=>!$('run').disabled,'mobile quick run');assert($('notice').textContent.includes('Executed'),'persistent mobile run action');
  $('stop').click();await wait(()=>$('runtime-status').textContent.includes('WASM ready')&&!$('run').disabled,'reset');await run('replay');assert($('notice').textContent.includes('Replay matched'),'worker reset preserves replay capability');
  output.textContent='PASS '+JSON.stringify({checks:passed.length,passed});
 }catch(error){output.textContent='FAIL '+error.stack+'\nPASSED '+JSON.stringify(passed);}

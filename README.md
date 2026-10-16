@@ -212,9 +212,9 @@ The core binary requires a supplied provider for prediction and does not load na
 
 ## Interactive browser tutorial
 
-[Launch RuGraph Explorer](https://ruvnet.github.io/ruGraph/) to write and run real graph programs in your browser. The spatial graph view follows the RuVector Explorer style, with six guided lessons covering dependencies, conflicting evidence, expiry, permissions, cosine retrieval and counterfactual audits.
+[Launch RuGraph Explorer](https://ruvnet.github.io/ruGraph/) to write and run real graph programs in your browser. The animated orbital graph view follows the RuVector Explorer style, with six guided lessons covering dependencies, conflicting evidence, expiry, permissions, cosine retrieval and counterfactual audits.
 
-Change the database evidence or host clock, run the program, and select a node to inspect its sources and witnesses. Edit the program, snapshot or context; compare decisions, replay the complete receipt and export it as JSON. Every result comes from the same Rust runtime compiled to WASM, isolated in a terminable Worker. Inputs stay in browser memory.
+Change the database evidence or host clock, run the program, and select a node to inspect its sources and witnesses. Edit the program, snapshot or context; compare decisions, replay the complete receipt and export it as JSON. Every result comes from the same Rust runtime compiled to WASM, isolated in a terminable Worker. Inputs stay in browser memory. On phones, a portrait graph, large touch targets, lesson picker and persistent Run controls keep the tutorial usable. Pause motion at any time; system reduced motion preferences are respected.
 
 ```bash
 bash scripts/build-explorer.sh
