@@ -15,3 +15,10 @@ body{background:#03060c}.ambient{position:fixed;inset:0;pointer-events:none;z-in
 /* Draw corner brackets without tinting the graph surface. */
 .stage-corners{border:0;clip-path:none;background:none}.stage-corners::before,.stage-corners::after{content:'';position:absolute;width:25px;height:25px;border-color:#7ef0cf66;border-style:solid;pointer-events:none}.stage-corners::before{left:0;top:0;border-width:1px 0 0 1px}.stage-corners::after{right:0;bottom:0;border-width:0 1px 1px 0}
 .stage.paused .scan-beam::after{animation-play-state:paused!important}
+
+/* Evidence focus and guided progression remain readable without animation. */
+.journey,.focus-card{display:flex;align-items:center;gap:24px;padding:20px 24px;border-bottom:1px solid #202d3b;background:linear-gradient(110deg,#101c23,#080c14)}
+.journey strong{display:block;font-size:14px;margin-top:7px;color:#d3e5eb}.journey progress{flex:1;min-width:40px;height:5px;accent-color:#80f5d0;border:0;border-radius:8px;background:#24313d}.journey progress::-webkit-progress-bar{background:#24313d;border-radius:8px}.journey progress::-webkit-progress-value{background:#80f5d0;border-radius:8px}
+.journey button,.focus-card button{min-height:44px;white-space:nowrap}.focus-card{background:#080e17;justify-content:space-between}.focus-card h3{margin:8px 0;font-size:20px;color:#a3f9dc}.focus-card p{margin:0;max-width:620px;color:#aebdcc;font-size:13px;line-height:1.7}.node.neighbor .core{stroke:#75b9c8;stroke-width:2}.edge-flow.connected{stroke:#a0ffe4;stroke-width:2.5}
+#stage,#results,#source-panel,#node-detail{scroll-margin-top:24px}
+@media(max-width:600px){.journey,.focus-card{padding:18px 16px;gap:14px;flex-wrap:wrap}.journey>div{flex:1}.journey progress{flex-basis:100%;order:3}.focus-card>div{width:100%}.focus-card button{width:100%}.journey strong{font-size:12px}}

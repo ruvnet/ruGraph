@@ -9,6 +9,10 @@ function lesson(index){frame.contentDocument.querySelectorAll('.lesson')[index].
 try{
  await wait(()=>$('runtime-status')?.textContent.includes('WASM ready'),'WASM boot');
  await run();assert($('decisions').textContent.includes('supported'),'real Worker WASM execution');
+ assert($('focus-summary').textContent.includes('supported'),'selected node explains real decision');
+ assert($('journey-meter').value===1,'successful lesson advances progress');
+ const outside=[...frame.contentDocument.querySelectorAll('#nodes [role=button]')].find(n=>n.getAttribute('aria-label').includes('not assessed'));outside.dispatchEvent(new MouseEvent('click'));assert($('focus-status').textContent==='Outside query','unassessed node distinguished from pending execution');
+ $('inspect-focus').click();assert(frame.contentDocument.querySelector('.node-inspector').open,'focus opens evidence inspector');
  const hash=$('metric-hash').textContent;await run('replay');assert($('notice').textContent.includes('Replay matched')&&$('metric-hash').textContent===hash,'identical replay');
  lesson(1);await run();assert($('decisions').textContent.includes('conflicting'),'contradiction preserved');
  change('signal','healthy');await run();assert(!$('decisions').textContent.includes('conflicting')&&$('decisions').textContent.includes('refuted'),'evidence control recomputes');
@@ -40,6 +44,7 @@ try{
  assert(frame.contentDocument.getAnimations().filter(a=>a.playState==='running').length===0,'motion pause includes scanning beam');
  $('motion').click();assert(!$('stage').classList.contains('paused'),'motion resumes');
  const before=$('world').getAttribute('transform');$('zoom-in').click();assert($('world').getAttribute('transform')!==before,'touch zoom');$('fit').click();
+ frame.contentDocument.querySelector('[data-input=snapshot]').click();$('quick-code').click();assert(!$('source-panel').hidden&&$('snapshot-panel').hidden,'mobile code action reveals source tab');
  $('quick-run').click();await wait(()=>!$('run').disabled,'mobile quick run');assert($('notice').textContent.includes('Executed'),'persistent mobile run action');
  $('stop').click();await wait(()=>$('runtime-status').textContent.includes('WASM ready')&&!$('run').disabled,'reset');await run('replay');assert($('notice').textContent.includes('Replay matched'),'worker reset preserves replay capability');
  output.textContent='PASS '+JSON.stringify({checks:passed.length,passed});

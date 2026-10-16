@@ -29,3 +29,5 @@ python3 scripts/test-explorer-browser.py
 GitHub Actions builds the pinned runtime, runs both suites and deploys the exact tested directory to Pages on main. `build.json` identifies the source revision and asset hashes. Revert the source commit to roll back and redeploy.
 
 Inputs live only in browser memory. The page limits each editor to 1 MiB, bounds rendered elements, and terminates operations after 8 seconds in a Worker. Receipt export is explicit. Host latency includes message transfer and compilation. Hashes verify integrity rather than producer identity. See ADR-GL-013 for the trust boundary and acceptance contract.
+
+The evidence focus card explains the selected node using the actual runtime decision, highlights its connected paths, and links to the witness inspector. Nodes outside a completed query are explicitly labeled. Session-only lesson progress and a next-lesson action guide exploration without storing user inputs. The mobile Code action always opens the source editor.

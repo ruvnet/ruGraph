@@ -11,7 +11,9 @@ $('lesson-select').onchange=()=>loadLesson(Number($('lesson-select').value));
 $('previous-lesson').onclick=()=>loadLesson((active+lessons.length-1)%lessons.length);
 $('next-lesson').onclick=()=>loadLesson((active+1)%lessons.length);
 const jump=id=>$(id).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
-$('view-results').onclick=()=>jump('results');$('quick-code').onclick=()=>jump('source-panel');$('quick-results').onclick=()=>jump('results');
+$('view-results').onclick=()=>jump('results');$('quick-code').onclick=()=>{tabs('data-input','source');jump('source-panel');$('source').focus({preventScroll:true});};$('quick-results').onclick=()=>jump('results');
+$('continue-lesson').onclick=()=>{loadLesson((active+1)%lessons.length);jump('stage');};
+$('inspect-focus').onclick=()=>{document.querySelector('.node-inspector').open=true;jump('node-detail');};
 $('quick-run').onclick=async()=>{await execute('run');jump('results');};
 function el(tag,text,className){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(className)e.className=className;return e;}
 function notice(text,type=''){ $('notice').textContent=text;$('notice').className=`notice ${type}`; }
@@ -28,7 +30,7 @@ for(const group of document.querySelectorAll('[role=tablist]')){
 }
 for(const b of document.querySelectorAll('[data-input]'))b.onclick=()=>tabs('data-input',b.dataset.input);
 for(const b of document.querySelectorAll('[data-result]'))b.onclick=()=>tabs('data-result',b.dataset.result);
-function renderLessons(){ $('lessons').replaceChildren(...lessons.map((l,i)=>{const b=el('button',undefined,`lesson ${completed.has(i)?'completed':''}`);b.setAttribute('aria-pressed',String(active===i));b.append(el('span',String(i+1).padStart(2,'0'),'number'),el('span',l.title));b.onclick=()=>loadLesson(i);return b;}));$('lesson-select').value=String(active);$('progress').textContent=`${String(active+1).padStart(2,'0')} / 06`;}
+function renderLessons(){ $('lessons').replaceChildren(...lessons.map((l,i)=>{const b=el('button',undefined,`lesson ${completed.has(i)?'completed':''}`);b.setAttribute('aria-pressed',String(active===i));b.append(el('span',String(i+1).padStart(2,'0'),'number'),el('span',l.title));b.onclick=()=>loadLesson(i);return b;}));$('journey-progress').textContent=`${completed.size} of ${lessons.length} lessons explored`;$('journey-meter').value=completed.size;$('continue-lesson').textContent=active===lessons.length-1?'Back to first lesson ↺':'Next lesson →';$('lesson-select').value=String(active);$('progress').textContent=`${String(active+1).padStart(2,'0')} / 06`;}
 function loadLesson(index){
   if(busy){client.reset();ready();}
   active=index;const lesson=lessons[index],data=fixture(lesson);
@@ -119,9 +121,13 @@ function renderGraph(){
   const ns=nodes(),ids=new Map(ns.map((n,i)=>[n.id,point(n.id,i)])),term=$('search').value.toLowerCase(),decision=new Map(lastDecisions.map(d=>[d.subject,d]));
   const edges=Array.isArray(currentSnapshot?.edges)?currentSnapshot.edges.filter(e=>e&&typeof e.source==='string'&&typeof e.target==='string').slice(0,500):[];
   $('orbits').replaceChildren(...[0,1,2].map(i=>se('ellipse',{cx:compact.matches?300:500,cy:compact.matches?375:260,rx:(compact.matches?235:330)+i*45,ry:(compact.matches?300:160)+i*28,class:'orbital-track'})));
-  const focused=decision.get(selected);$('focus-name').textContent=selected;$('focus-status').textContent=focused?focused.status:dirty?'Inputs changed':'Awaiting execution';
-  $('edges').replaceChildren(...edges.filter(e=>ids.has(e.source)&&ids.has(e.target)).map(e=>{const [x1,y1]=ids.get(e.source),[x2,y2]=ids.get(e.target),g=se('g',{}),bend=(y2-y1)*.2,path=`M ${x1} ${y1} Q ${(x1+x2)/2+bend} ${(y1+y2)/2-25} ${x2} ${y2}`;g.append(se('path',{d:path,class:`edge-line ${e.source===selected||e.target===selected?'highlight':''}`}),se('path',{d:path,class:'edge-flow'}));return g;}));
-  $('nodes').replaceChildren(...ns.map((n,i)=>{const [x,y]=ids.get(n.id),d=decision.get(n.id),g=se('g',{transform:`translate(${x},${y})`,class:`node ${d?.status||''} ${selected===n.id?'selected':''} ${term&&!n.id.toLowerCase().includes(term)?'dim':''}`,tabindex:0,role:'button','aria-label':`${n.id}: ${d?.status||'not assessed'}`});
+  const focused=decision.get(selected);$('focus-name').textContent=selected;$('focus-status').textContent=dirty?'Inputs changed':focused?focused.status:lastReceipt?'Outside query':'Awaiting execution';
+  $('focus-title').textContent=selected;
+  const adjacent=edges.filter(e=>e.source===selected||e.target===selected);
+  const neighbors=new Set(adjacent.flatMap(e=>[e.source,e.target]));
+  $('focus-summary').textContent=dirty?'Inputs changed. Run again to assess this node.':focused?`${focused.predicate}: ${focused.status}. ${focused.evidence.length} live witness${focused.evidence.length===1?'':'es'}. ${adjacent.length} connected edge${adjacent.length===1?'':'s'}.`:lastReceipt?'This node is outside the current query result. Its evidence has not been assessed by this run.':'Run the program, then select any node to follow its evidence.';
+  $('edges').replaceChildren(...edges.filter(e=>ids.has(e.source)&&ids.has(e.target)).map(e=>{const [x1,y1]=ids.get(e.source),[x2,y2]=ids.get(e.target),g=se('g',{}),bend=(y2-y1)*.2,path=`M ${x1} ${y1} Q ${(x1+x2)/2+bend} ${(y1+y2)/2-25} ${x2} ${y2}`;g.append(se('path',{d:path,class:`edge-line ${e.source===selected||e.target===selected?'highlight':''}`}),se('path',{d:path,class:`edge-flow ${e.source===selected||e.target===selected?'connected':''}`}));return g;}));
+  $('nodes').replaceChildren(...ns.map((n,i)=>{const [x,y]=ids.get(n.id),d=decision.get(n.id),g=se('g',{transform:`translate(${x},${y})`,class:`node ${d?.status||''} ${selected===n.id?'selected':neighbors.has(n.id)?'neighbor':''} ${term&&!n.id.toLowerCase().includes(term)?'dim':''}`,tabindex:0,role:'button','aria-label':`${n.id}: ${d?.status||'not assessed'}`});
     g.append(se('circle',{r:compact.matches?48:30,class:'hit-area'}),se('circle',{r:30,class:'halo'}),se('circle',{r:24,class:'node-orbit'}));if(d?.status==='supported')g.append(se('circle',{r:23,class:'pulse'}));g.append(se('circle',{r:16,class:'core'}));const glyph=se('text',{y:4,class:'glyph'});glyph.textContent=n.id==='database'?'▤':n.id==='api'?'⌘':'◇';g.append(glyph);const label=se('text',{x:24,y:4});label.textContent=n.id.slice(0,45);g.append(label);g.onclick=()=>selectNode(n.id);g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectNode(n.id);}};return g;}));
   $('metric-nodes').replaceChildren(document.createTextNode(String(ns.length)+' '),el('small','nodes'));$('node-count').textContent=`${ns.length}${currentSnapshot?.nodes?.length>200?' of '+currentSnapshot.nodes.length:''} nodes`;
 }
