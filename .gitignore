@@ -1,0 +1,7 @@
+**/target/
+**/node_modules/
+**/__pycache__/
+**/*.egg-info/
+**/build/
+**/dist/
+*.tgz
