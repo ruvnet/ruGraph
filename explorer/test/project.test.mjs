@@ -1,0 +1,6 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {encodeProject,decodeProject,compareDecisions} from '../project.mjs';
+test('project preserves raw duplicate keys and u64 for runtime validation',()=>{const inputs={source:'program demo',snapshot:'{"id":18446744073709551615,"id":1}',context:'{}'};assert.deepEqual(decodeProject(encodeProject(inputs)),inputs);});
+test('project rejects unsupported versions and oversized editors',()=>{assert.throws(()=>decodeProject('{"format":"rugraph.project","version":2}'));assert.throws(()=>encodeProject({source:'x'.repeat(1048577),snapshot:'{}',context:'{}'}));assert.throws(()=>decodeProject('null'));});
+test('comparison distinguishes lineage, status, additions and removals',()=>{const a={subject:'a',predicate:'P',status:'supported',evidence:[{id:1}]};const receipt=items=>({output:{items}});assert.equal(compareDecisions(receipt([a]),receipt([a])).length,0);assert.equal(compareDecisions(receipt([a]),receipt([{...a,evidence:[{id:2}]}]))[0].lineageChanged,true);assert.equal(compareDecisions(receipt([a]),receipt([]))[0].after,'outside query');assert.equal(compareDecisions(receipt([]),receipt([a]))[0].before,'outside query');});

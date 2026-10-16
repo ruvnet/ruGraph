@@ -1,3 +1,4 @@
+import {encodeProject,decodeProject,compareDecisions,PROJECT_LIMIT} from './project.mjs';
 import {lessons,fixture,auditOptions} from './lessons.mjs';
 import {RuntimeClient} from './client.mjs';
 const $=id=>document.getElementById(id);
@@ -5,6 +6,7 @@ const svgNS='http://www.w3.org/2000/svg';
 const client=new RuntimeClient();
 let active=0,busy=false,lastReceipt=null,lastRequest=null,lastDecisions=[],selected='database',zoom=1,spatial=true,currentSnapshot=null,dirty=false;
 const completed=new Set();
+const history=[];let revision=0;
 const compact=matchMedia('(max-width: 600px)');
 for(const [i,l] of lessons.entries()){const option=document.createElement('option');option.value=i;option.textContent=`${String(i+1).padStart(2,'0')} / ${l.title}`;$('lesson-select').append(option);}
 $('lesson-select').onchange=()=>loadLesson(Number($('lesson-select').value));
@@ -17,7 +19,7 @@ $('inspect-focus').onclick=()=>{document.querySelector('.node-inspector').open=t
 $('quick-run').onclick=async()=>{await execute('run');jump('results');};
 function el(tag,text,className){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(className)e.className=className;return e;}
 function notice(text,type=''){ $('notice').textContent=text;$('notice').className=`notice ${type}`; }
-function setBusy(value){busy=value;$('stage').classList.toggle('executing',value);for(const id of ['run','check','audit','quick-run'])$(id).disabled=value; $('replay').disabled=value||!lastReceipt;$('download').disabled=value||!lastReceipt;}
+function setBusy(value){busy=value;$('stage').classList.toggle('executing',value);for(const id of ['run','check','compile','audit','quick-run'])$(id).disabled=value; $('replay').disabled=value||!lastReceipt;$('download').disabled=value||!lastReceipt;}
 async function ready(){setBusy(true);$('runtime-status').textContent='Loading WASM';$('status-dot').classList.remove('ready');try{await client.ready;$('runtime-status').textContent='WASM ready · browser local';$('status-dot').classList.add('ready');setBusy(false);}catch(e){notice(e.message,'error');$('runtime-status').textContent='Runtime unavailable';setBusy(true);}}
 function tabs(attribute,value){for(const button of document.querySelectorAll(`[${attribute}]`)){const on=button.getAttribute(attribute)===value;button.setAttribute('aria-selected',String(on));button.tabIndex=on?0:-1;$(button.getAttribute('aria-controls')).hidden=!on;}}
 for(const group of document.querySelectorAll('[role=tablist]')){
@@ -32,6 +34,7 @@ for(const b of document.querySelectorAll('[data-input]'))b.onclick=()=>tabs('dat
 for(const b of document.querySelectorAll('[data-result]'))b.onclick=()=>tabs('data-result',b.dataset.result);
 function renderLessons(){ $('lessons').replaceChildren(...lessons.map((l,i)=>{const b=el('button',undefined,`lesson ${completed.has(i)?'completed':''}`);b.setAttribute('aria-pressed',String(active===i));b.append(el('span',String(i+1).padStart(2,'0'),'number'),el('span',l.title));b.onclick=()=>loadLesson(i);return b;}));$('journey-progress').textContent=`${completed.size} of ${lessons.length} lessons explored`;$('journey-meter').value=completed.size;$('continue-lesson').textContent=active===lessons.length-1?'Back to first lesson ↺':'Next lesson →';$('lesson-select').value=String(active);$('progress').textContent=`${String(active+1).padStart(2,'0')} / 06`;}
 function loadLesson(index){
+  revision++;$('project-state').textContent='Tutorial inputs';
   if(busy){client.reset();ready();}
   active=index;const lesson=lessons[index],data=fixture(lesson);
   $('lesson-tag').textContent=lesson.tag;$('lesson-heading').textContent=lesson.heading;
@@ -47,7 +50,7 @@ function loadLesson(index){
   notice(index===3?'Ready. This lesson intentionally starts without a graph.read grant.':'Ready. Run the program or change an input.');
   location.hash=lesson.id;
 }
-function markDirty(){dirty=true;$('dirty').textContent='INPUTS CHANGED';lastDecisions=[];renderGraph();renderNodeList();notice('Inputs changed. Displayed receipt belongs to the previous run. Run again to assess these inputs.','stale');}
+function markDirty(){revision++;dirty=true;$('dirty').textContent='INPUTS CHANGED';lastDecisions=[];renderGraph();renderNodeList();notice('Inputs changed. Displayed receipt belongs to the previous run. Run again to assess these inputs.','stale');}
 for(const name of ['source','snapshot','context'])$(name).addEventListener('input',()=>{
   if(name!=='source'){for(const id of ['clock','signal','grant'])$(id).disabled=true;$('dirty').textContent='CUSTOM JSON';try{currentSnapshot=JSON.parse($('snapshot').value);}catch{/* retain last valid visual preview */}}
   markDirty();
@@ -83,15 +86,19 @@ async function execute(action){
   if(busy)return;
   let inputs;try{inputs=payload();}catch(e){notice(e.message,'error');return;}
   setBusy(true);notice(`${action==='audit'?'Running independent audit trials':'Executing '+action} in WebAssembly…`);
+  const executionRevision=revision;
   const start=performance.now();
   try{
     const data=await client.call(action,inputs),elapsed=performance.now()-start,result=JSON.parse(data.result);
+    if(executionRevision!==revision){notice('Inputs changed while executing. Result discarded; run the current inputs.','stale');return;}
     $('metric-time').textContent=`${elapsed.toFixed(2)} ms`;
     if(action==='run'||action==='replay'){
+      if(action==='run'){history.push({inputs:{source:inputs.source,snapshot:inputs.snapshot,context:inputs.context},receipt:data.result});if(history.length>2)history.shift();renderHistory();}
       lastReceipt=data.result;lastRequest=data.request;dirty=false;$('dirty').textContent='RECEIPT MATCHES INPUTS';
       currentSnapshot=JSON.parse(inputs.snapshot);renderDecisions(result);completed.add(active);renderLessons();tabs('data-result','decisions');
       notice(action==='replay'?'Replay matched the complete prior receipt. Integrity and deterministic re-execution passed.':`Executed ${result.work} work units. ${result.output.items?.length||0} decisions. Inputs stayed in this browser.`);
-    }else if(action==='check'){notice(`Program ${result.name} passed syntax, type and effect checks. Host permissions are checked during execution.`);}
+    }else if(action==='compile'){$('compiled-output').textContent=safePreview(JSON.stringify(result,null,2));$('compiled-panel').open=true;notice('Compiled successfully. Expand Compiled program to inspect the runtime representation.');}
+    else if(action==='check'){notice(`Program ${result.name} passed syntax, type and effect checks. Host permissions are checked during execution.`);}
     else if(action==='audit'){
       $('audit-output').textContent=safePreview(JSON.stringify(result,null,2));
       $('audit-results').replaceChildren(...result.trials.map(trial=>{const box=el('div',undefined,'audit-trial');box.append(el('strong',`Remove ${trial.intervention.kind}: ${trial.intervention.id}`),el('p',`${trial.removed_records} records removed · ${trial.changed_decisions} decisions with changed status or lineage`));for(const c of trial.changes)box.append(el('p',`${c.subject} / ${c.predicate}: ${c.before??'outside domain'} → ${c.after??'outside domain'}`));return box;}));
@@ -101,7 +108,7 @@ async function execute(action){
   }catch(error){notice(`${error.code||'INPUT_ERROR'}: ${error.message}`,'error');if(active===3&&error.code==='UNAUTHORIZED'){completed.add(active);renderLessons();}}
   finally{setBusy(false);}
 }
-for(const action of ['run','check','replay','audit'])$(action).onclick=()=>execute(action);
+for(const action of ['run','check','compile','replay','audit'])$(action).onclick=()=>execute(action);
 $('stop').onclick=()=>{client.reset();ready();notice('Runtime reset. Any in-flight execution was terminated.');};
 window.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();execute('run');}});
 $('download').onclick=()=>{
@@ -152,3 +159,28 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){$('stage').classList.
 const initial=lessons.findIndex(l=>l.id===location.hash.slice(1));loadLesson(initial<0?0:initial);ready();
 window.addEventListener('hashchange',()=>{const i=lessons.findIndex(l=>l.id===location.hash.slice(1));if(i>=0&&i!==active)loadLesson(i);});
 fetch('./build.json').then(r=>r.ok?r.json():null).then(b=>{if(b)$('build').textContent=`BUILD ${b.revision.slice(0,8)} · RUST / WASM`;}).catch(()=>{});
+
+function downloadText(text,name){const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));const a=el('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function restoreInputs(inputs,label){
+  if(busy){client.reset();ready();}
+  for(const id of ['source','snapshot','context'])$(id).value=inputs[id];
+  for(const id of ['clock','signal','grant'])$(id).disabled=true;
+  try{currentSnapshot=JSON.parse(inputs.snapshot);}catch{currentSnapshot=null;}
+  lastReceipt=null;lastRequest=null;lastDecisions=[];
+  $('receipt-output').textContent='No receipt for these inputs.';$('audit-output').textContent='Run Audit for these inputs.';$('audit-results').replaceChildren();
+  $('decisions').replaceChildren(el('p','Run the imported program to assess its inputs.','empty'));
+  for(const id of ['decisions','work','time'])$(`metric-${id}`).textContent='—';$('metric-hash').textContent='Awaiting run';
+  markDirty();setBusy(busy);tabs('data-input','source');$('project-state').textContent=label;notice('Project loaded. Review source, snapshot and host grants, then select Run.');
+}
+$('export-project').onclick=()=>{try{downloadText(encodeProject(payload()),'rugraph-project.json');}catch(e){notice(e.message,'error');}};
+$('import-project').onclick=()=>$('project-file').click();
+$('project-file').onchange=async()=>{const file=$('project-file').files[0];if(!file)return;const before=revision;try{if(file.size>PROJECT_LIMIT)throw Error('Project exceeds the 8 MiB import limit.');const inputs=decodeProject(await file.text());if(before!==revision)throw Error('Inputs changed while opening the file. Open it again to replace them.');restoreInputs(inputs,'Imported project');}catch(e){notice(e.message,'error');}finally{$('project-file').value='';}};
+function renderHistory(){
+  $('history-list').replaceChildren(...history.map((run,i)=>{const row=el('div',undefined,'history-row'),r=JSON.parse(run.receipt);row.append(el('code',r.receipt_hash.slice(0,12)));const restore=el('button',`Restore run ${i+1}`);restore.onclick=()=>restoreInputs(run.inputs,`Restored run ${i+1}`);const save=el('button',`Save run ${i+1}`);save.onclick=()=>downloadText(encodeProject(run.inputs),`rugraph-run-${i+1}.json`);row.append(restore,save);return row;}));
+  const box=$('comparison');box.replaceChildren();if(history.length<2){box.textContent='Run again to compare decisions and witness lineage.';return;}
+  const changes=compareDecisions(JSON.parse(history[0].receipt),JSON.parse(history[1].receipt));box.append(el('p',`${changes.length} changed decisions between the two captured runs. Editing inputs does not change this comparison.`));
+  for(const c of changes.slice(0,100))box.append(el('p',`${c.subject} / ${c.predicate}: ${c.before} → ${c.after}${c.lineageChanged?' · witness lineage changed':''}`));
+  if(changes.length>100)box.append(el('p','Showing the first 100 changes.'));
+}
+for(const button of document.querySelectorAll('[data-insert]'))button.onclick=()=>{const t=$('source'),start=t.selectionStart;t.setRangeText(button.dataset.insert,start,t.selectionEnd,'end');if(['{}','()','[]'].includes(button.dataset.insert))t.setSelectionRange(start+1,start+1);t.focus({preventScroll:true});markDirty();};
+$('editor-expand').onclick=()=>{const expanded=$('source').classList.toggle('expanded');$('editor-expand').setAttribute('aria-pressed',String(expanded));$('editor-expand').textContent=expanded?'Shrink editor':'Expand editor';};

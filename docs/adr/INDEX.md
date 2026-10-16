@@ -13,3 +13,4 @@
 * [ADR-GL-011-rvf-capsules](ADR-GL-011-rvf-capsules.md)
 * [ADR-GL-012-governed-learning](ADR-GL-012-governed-learning.md)
 * [ADR-GL-013-browser-explorer](ADR-GL-013-browser-explorer.md)
+* [ADR-GL-014-explorer-project-workspace](ADR-GL-014-explorer-project-workspace.md)

@@ -8,6 +8,7 @@ self.onmessage=({data})=>{
     if(!runtime) throw Error('WASM runtime is unavailable');
     let result,request;
     if(action==='verify') result=runtime.verify(receipt);
+    else if(action==='compile') result=runtime.compile(source);
     else if(action==='check') result=runtime.check(source);
     else {
       const program=runtime.compile(source);

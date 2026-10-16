@@ -212,6 +212,8 @@ The core binary requires a supplied provider for prediction and does not load na
 
 ## Interactive browser tutorial
 
+Save and reopen projects, inspect compiled programs, compare the last two executions, and restore their exact inputs. Mobile editing includes indentation, paired delimiters and an expandable source editor. Imported projects never execute automatically.
+
 [Launch RuGraph Explorer](https://ruvnet.github.io/ruGraph/) to write and run real graph programs in your browser. The animated orbital graph view follows the RuVector Explorer style, with six guided lessons covering dependencies, conflicting evidence, expiry, permissions, cosine retrieval and counterfactual audits.
 
 Change the database evidence or host clock, run the program, and select a node to inspect its sources and witnesses. Edit the program, snapshot or context; compare decisions, replay the complete receipt and export it as JSON. Every result comes from the same Rust runtime compiled to WASM, isolated in a terminable Worker. Inputs stay in browser memory. On phones, a portrait graph, large touch targets, lesson picker and persistent Run controls keep the tutorial usable. Pause motion at any time; system reduced motion preferences are respected.

@@ -31,3 +31,11 @@ GitHub Actions builds the pinned runtime, runs both suites and deploys the exact
 Inputs live only in browser memory. The page limits each editor to 1 MiB, bounds rendered elements, and terminates operations after 8 seconds in a Worker. Receipt export is explicit. Host latency includes message transfer and compilation. Hashes verify integrity rather than producer identity. See ADR-GL-013 for the trust boundary and acceptance contract.
 
 The evidence focus card explains the selected node using the actual runtime decision, highlights its connected paths, and links to the witness inspector. Nodes outside a completed query are explicitly labeled. Session-only lesson progress and a next-lesson action guide exploration without storing user inputs. The mobile Code action always opens the source editor.
+
+## Project workspace
+
+Open and save version 1 `rugraph.project` JSON files. Source, snapshot and context remain raw strings so duplicate keys and u64 values reach the strict Rust parser unchanged. Import is limited to 8 MiB with 1 MiB per editor. Opening a project clears active results and does not execute code. Saving explicitly downloads input data, which can contain sensitive observations.
+
+Compile exposes the actual WASM compiler output. The session retains two successful runs with exact input text and receipts, shows decision and witness lineage differences, and supports restoring or saving either input set. This history is in memory only and does not authenticate sources. Import a saved run and execute it to reproduce its receipt. Results from inputs edited during execution are discarded.
+
+Mobile programming provides paired delimiters, indentation and an expandable editor. No new external dependencies or storage services are required.

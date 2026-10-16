@@ -13,6 +13,7 @@ try{
  assert($('journey-meter').value===1,'successful lesson advances progress');
  const outside=[...frame.contentDocument.querySelectorAll('#nodes [role=button]')].find(n=>n.getAttribute('aria-label').includes('not assessed'));outside.dispatchEvent(new MouseEvent('click'));assert($('focus-status').textContent==='Outside query','unassessed node distinguished from pending execution');
  $('inspect-focus').click();assert(frame.contentDocument.querySelector('.node-inspector').open,'focus opens evidence inspector');
+ await run('compile');assert($('compiled-panel').open&&$('compiled-output').textContent.includes('name'),'compiled program inspection');
  const hash=$('metric-hash').textContent;await run('replay');assert($('notice').textContent.includes('Replay matched')&&$('metric-hash').textContent===hash,'identical replay');
  lesson(1);await run();assert($('decisions').textContent.includes('conflicting'),'contradiction preserved');
  change('signal','healthy');await run();assert(!$('decisions').textContent.includes('conflicting')&&$('decisions').textContent.includes('refuted'),'evidence control recomputes');
@@ -47,5 +48,11 @@ try{
  frame.contentDocument.querySelector('[data-input=snapshot]').click();$('quick-code').click();assert(!$('source-panel').hidden&&$('snapshot-panel').hidden,'mobile code action reveals source tab');
  $('quick-run').click();await wait(()=>!$('run').disabled,'mobile quick run');assert($('notice').textContent.includes('Executed'),'persistent mobile run action');
  $('stop').click();await wait(()=>$('runtime-status').textContent.includes('WASM ready')&&!$('run').disabled,'reset');await run('replay');assert($('notice').textContent.includes('Replay matched'),'worker reset preserves replay capability');
+ lesson(0);await run();change('signal','healthy');await run();assert($('comparison').textContent.includes('supported → refuted'),'two runs show actual decision changes');
+ const savedSource=$('source').value;change('source','broken');$('history-list').querySelector('button').click();assert($('source').value===savedSource,'history restores captured source');
+ const doc=frame.contentDocument,win=frame.contentWindow;
+ const bundle=JSON.stringify({format:'rugraph.project',version:1,inputs:{source:savedSource,snapshot:$('snapshot').value,context:$('context').value}});
+ const transfer=new win.DataTransfer();transfer.items.add(new win.File([bundle],'project.json',{type:'application/json'}));$('project-file').files=transfer.files;$('project-file').dispatchEvent(new Event('change'));await wait(()=>$('project-state').textContent==='Imported project','project import');assert($('metric-hash').textContent==='Awaiting run','import never executes automatically');await run();assert($('notice').textContent.includes('Executed'),'imported project executes in WASM');
+ const editor=$('source');editor.setSelectionRange(editor.value.length,editor.value.length);doc.querySelector('[data-insert="{}"]').click();assert(editor.value.endsWith('{}')&&editor.selectionStart===editor.value.length-1,'mobile paired delimiter insertion');$('editor-expand').click();assert(editor.classList.contains('expanded'),'mobile expanded editor');
  output.textContent='PASS '+JSON.stringify({checks:passed.length,passed});
 }catch(error){output.textContent='FAIL '+error.stack+'\nPASSED '+JSON.stringify(passed);}

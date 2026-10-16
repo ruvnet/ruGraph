@@ -31,7 +31,7 @@ jobs:
           wasm-bindgen crates/ruvector-language-wasm/target/wasm32-unknown-unknown/release/ruvector_language_wasm.wasm --target nodejs --out-dir npm/packages/graph-language-wasm/generated/node --out-name runtime
           echo '{"type":"commonjs"}' > npm/packages/graph-language-wasm/generated/node/package.json
       - name: Tutorial contracts and worker recovery
-        run: node --test explorer/test/lessons.test.mjs
+        run: node --test explorer/test/*.test.mjs
       - name: Real browser UI and mobile acceptance
         run: python3 scripts/test-explorer-browser.py
       - uses: actions/upload-pages-artifact@v3
