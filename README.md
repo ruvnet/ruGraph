@@ -6,9 +6,9 @@
 
 RuGraph turns graph relationships, vector similarity, and signed observations into bounded, inspectable programs. Follow dependencies, apply explicit evidence rules, report contradictions, and trace a conclusion back to its selected observations and sources. Learned predictions have a separate type, so a model score cannot silently become evidence.
 
-Write a `.rvg` program or strict JSON. Execute through Rust, the CLI, JavaScript, TypeScript, or Python. Every successful run returns a receipt with its output, input hashes, logical time, and work charged.
+Write a `.rvg` program or strict JSON. Execute through Rust, the CLI, JavaScript, TypeScript, Python, or WebAssembly. Every successful run returns a receipt with its output, input hashes, logical time, and work charged.
 
-[Quick start](#quick-start) · [Walkthrough](#walkthrough-a-service-incident) · [How it works](#how-execution-works) · [Replay](#replay-a-decision) · [Evidence audits](#ask-what-changes) · [SDKs](#use-your-language) · [Specification](docs/research/graph-language/SPEC.md)
+[Quick start](#quick-start) · [Walkthrough](#walkthrough-a-service-incident) · [How it works](#how-execution-works) · [Replay](#replay-a-decision) · [Evidence audits](#ask-what-changes) · [SDKs](#use-your-language) · [WASM, learning and RVF](#portable-execution-and-learning) · [Specification](docs/research/graph-language/SPEC.md)
 
 | If your system needs to… | RuGraph provides |
 |---|---|
@@ -185,8 +185,9 @@ Both SDKs expose `client.audit(request, options)`. Explore the [agent memory app
 | CLI | `rvg-core`, native `rvg`, and offline `rvg-model` | [Native runtime](crates/ruvector-language-native/README.md) |
 | JavaScript / TypeScript | `RuGraph` from `@ruvector/graph-language` | [SDK and local installation](npm/packages/graph-language/README.md) |
 | Python | `RuGraph` from `ruvector_language` | [SDK and local installation](python/ruvector-language/README.md) |
+| WebAssembly | `loadRuGraph` from `@ruvector/graph-language-wasm` | [Browser and Node runtime](npm/packages/graph-language-wasm/README.md) |
 
-SDKs invoke a trusted executable with bounded input, output, and timeouts. They do not automatically install a runtime or download a model. JavaScript rejects integers outside its safe range; Python supports full Rust `u64` timestamps. Existing crate names, package names, imports, and `RUVECTOR_LANGUAGE_BIN` remain stable. Install from this repository using the linked guides.
+The process SDKs invoke a trusted executable with bounded input, output, and timeouts. They do not automatically install a runtime or download a model. JavaScript rejects integers outside its safe range; Python supports full Rust `u64` timestamps. Existing crate names, package names, imports, and `RUVECTOR_LANGUAGE_BIN` remain stable. Install from this repository using the linked guides.
 
 ### Rust embedding
 
@@ -207,6 +208,70 @@ The native runtime captures real `GraphDB` data with `capture_quiescent` under a
 
 The core binary requires a supplied provider for prediction and does not load native model artifacts. See the [native runtime guide](crates/ruvector-language-native/README.md) for build commands, capture constraints, and model examples.
 
+## Portable execution and learning
+
+[Validation evidence and reproduction steps](docs/research/graph-language/PORTABLE-VALIDATION.md).
+
+![Portable RuGraph: explicit inputs feed WASM or native Rust; native SONA proposes equivalent execution strategies; RVF stores requests, receipts, and learning reports as data.](crates/ruvector-language/assets/rugraph-portable.svg)
+
+### WebAssembly in browsers and Node
+
+The WASM package executes the same Rust core locally, without a subprocess. It exposes `compile`, `check`, `run`, `replay`, `audit`, and `verify`. Requests and results are JSON strings so full `u64` timestamps survive the JavaScript boundary. Keep large integers as raw JSON rather than roundtripping them through JavaScript numbers.
+
+```sh
+rustup target add wasm32-unknown-unknown --toolchain 1.90.0
+cargo +1.90.0 install wasm-bindgen-cli --version 0.2.105 --locked
+bash scripts/test-graph-language-wasm.sh
+```
+
+After building, use the local Node module:
+
+```js
+import { readFile } from 'node:fs/promises';
+import { loadRuGraph } from './npm/packages/graph-language-wasm/index.mjs';
+const graph = await loadRuGraph();
+const request = await readFile('request.json', 'utf8');
+const receipt = graph.run(request);
+console.log(graph.replay(request, receipt) === receipt); // true
+```
+
+[Browser loading and package installation](npm/packages/graph-language-wasm/README.md) use generated assets from the same build. The measured Node module is about **831 KiB** before compression. Inputs and outputs are capped at **16 MiB** each; the build caps linear memory at **256 MiB**, excluding JavaScript host memory. Use a Worker and host deadline for untrusted workloads. Native KGE providers and prepared snapshot handles are outside this WASM adapter.
+
+### SONA proposals with a frozen evaluator
+
+The optional native learning crate uses real RuVector **SONA trajectories, MicroLoRA adaptation, ReasoningBank retrieval, and Darwin Guard**. Learned pattern quality proposes ordinary or prepared execution. A separate evaluator checks distinct workloads, includes preparation and selector overhead, compares every receipt, and requires at least **10% latency reduction on every evaluation case**. Rejected candidates retain the ordinary strategy; the host can explicitly roll back an accepted recommendation.
+
+```sh
+bash scripts/test-graph-language-learning.sh
+```
+
+On the [recorded synthetic experiment](crates/ruvector-language-learning/reports/strategy-learning.json), the learned policy reduced batch latency **79.44%** relative to ordinary execution. Static prepared execution reduced it **79.46%**. This demonstrates working adaptation and gated selection, but **no advantage from learning over the static policy** on this workload. Training cost **231 ms** and is reported separately. LoRA changes demonstrate adaptation; ReasoningBank pattern quality makes the strategy recommendation.
+
+The host must explicitly apply a recommendation. This loop cannot alter rules, observations, capabilities, or the evaluator. It neither improves predictive accuracy by itself nor installs a production policy. See the [learning guide](crates/ruvector-language-learning/README.md) for bounds, rollback, and workload limitations.
+
+### RVF data capsules
+
+Package the walkthrough request and receipt with an optional learning report using the actual upstream RVF segment format:
+
+```sh
+cargo +1.90.0 build --manifest-path crates/ruvector-language-rvf/Cargo.toml --locked
+crates/ruvector-language-rvf/target/debug/rvg-capsule pack request.json receipt.json decision.rvf \
+  --attachment learning-report.json=crates/ruvector-language-learning/reports/strategy-learning.json
+crates/ruvector-language-rvf/target/debug/rvg-capsule verify decision.rvf
+```
+
+Capsules accept metadata segments only, with upstream segment checksums, manifest hashes, strict JSON, and explicit byte limits. They do not execute embedded code, grant permissions, or activate models. The learning report is data, not a restorable SONA checkpoint. Capsule integrity does not authenticate a producer or establish that a receipt belongs to its request; independent host authorized replay checks that relationship.
+
+The [RVF guide](crates/ruvector-language-rvf/README.md) documents the profile. Run the full portable pipeline after the component builds:
+
+```sh
+bash scripts/test-graph-language-rvf.sh
+bash scripts/test-graph-language-portable.sh
+python3 scripts/test-graph-language-browser.py  # requires Chrome
+```
+
+The pipeline produces a WASM receipt, replays it natively, runs the learner, and verifies an RVF capsule containing the request, receipt, audit, and learning report. [Architecture and acceptance contracts](docs/research/graph-language/PORTABILITY-LEARNING.md) describe the boundaries.
+
 ## Performance with evidence
 
 Rust hosts can prepare an immutable snapshot once to reuse validated indexes and its canonical hash:
@@ -225,7 +290,7 @@ See [raw paired samples](docs/research/graph-language/selection-borrowing-benchm
 
 ## Validate and contribute
 
-The complete suite covers **54 core, 10 native, 13 JavaScript, and 13 Python tests**, plus formatting, strict Clippy, package installation, TypeScript declarations, replay, and evidence audits.
+The original core suite covers **54 core, 10 native, 13 JavaScript, and 13 Python tests**, plus formatting, strict Clippy, package installation, TypeScript declarations, replay, and evidence audits.
 
 ```sh
 bash scripts/test-graph-language.sh
@@ -233,6 +298,8 @@ bash scripts/smoke-graph-language-packages.sh
 ```
 
 [Build prerequisites](CONTRIBUTING.md) · [CI](https://github.com/ruvnet/ruGraph/actions/workflows/graph-language.yml) · [Specification](docs/research/graph-language/SPEC.md) · [Architecture decisions](docs/adr/INDEX.md) · [Security review](docs/research/graph-language/SECURITY-REVIEW.md)
+
+The optional extensions add **11 WASM, 7 RVF, and 5 learning and integration tests**, plus real browser and portable pipeline checks. CI builds and checks all three extensions.
 
 RuGraph owns the language, adapters, and SDKs. RuVector provides graph and model infrastructure at an immutable Git revision. [Source provenance and update policy](UPSTREAM.md) document the extraction and dependency pin.
 

@@ -1,0 +1,396 @@
+{
+  "schema_version": 1,
+  "upstream_revision": "f017d5f10c78b95843614f040f5cf22bfc1b3ac8",
+  "training": [
+    {
+      "id": "train-0",
+      "request_sha256": "2c5f53df39a40b34c4293e885da93762ccb2517d4d5be302a564af57664973a2",
+      "queries": 4,
+      "cold_ns": [
+        1826391,
+        1868254,
+        1992300,
+        1705629,
+        1661083
+      ],
+      "prepared_ns": [
+        844687,
+        1014633,
+        894191,
+        789524,
+        752950
+      ],
+      "cold_median_ns": 1826391,
+      "prepared_median_ns": 844687,
+      "all_receipts_equal": true,
+      "receipt_hash": "c53afc2242a06d64e5ef64cae98498a2a9c447dd4f33c8e4a70838618f8e161d"
+    },
+    {
+      "id": "train-1",
+      "request_sha256": "4caab2c004df25fe37a52f9635975799d6ac206bd3cf89ea7a75f5a497c42b3e",
+      "queries": 4,
+      "cold_ns": [
+        3652090,
+        3147083,
+        3342546,
+        3170918,
+        3023997
+      ],
+      "prepared_ns": [
+        1226090,
+        1120401,
+        1329535,
+        1125359,
+        1108163
+      ],
+      "cold_median_ns": 3170918,
+      "prepared_median_ns": 1125359,
+      "all_receipts_equal": true,
+      "receipt_hash": "24cca23a29fca49e4ac6a7e6d95302cb3682a56186af3254126f40faeb3f5877"
+    },
+    {
+      "id": "train-2",
+      "request_sha256": "aa9d0253874d25eb14abdbe786a56c0d19cb0c4023e21dd46452e9cb538557d3",
+      "queries": 4,
+      "cold_ns": [
+        2474493,
+        2036285,
+        2208624,
+        1835505,
+        2477418
+      ],
+      "prepared_ns": [
+        1099220,
+        878399,
+        1008574,
+        1042274,
+        1074432
+      ],
+      "cold_median_ns": 2208624,
+      "prepared_median_ns": 1042274,
+      "all_receipts_equal": true,
+      "receipt_hash": "3ae8eaf8c3c1018fa2643ca697d143682de12194ac36380b497ff16b04d636f3"
+    },
+    {
+      "id": "train-3",
+      "request_sha256": "a47e04d724b806da0109c304747dc96fdede1b4d47c2764667c296b128810af1",
+      "queries": 4,
+      "cold_ns": [
+        3811570,
+        3395546,
+        3505150,
+        3104368,
+        3811369
+      ],
+      "prepared_ns": [
+        1218309,
+        1265158,
+        1269826,
+        1131408,
+        1537678
+      ],
+      "cold_median_ns": 3505150,
+      "prepared_median_ns": 1265158,
+      "all_receipts_equal": true,
+      "receipt_hash": "5d1138c41a20ff741a124d4c885300c8e817f9745e7a126790dd79c07010eead"
+    },
+    {
+      "id": "train-4",
+      "request_sha256": "717dbf8ec0be06817007e055546a3b9506456c18ce2fde30e2b6f6d72e8ee772",
+      "queries": 4,
+      "cold_ns": [
+        1961894,
+        1918469,
+        2003587,
+        1966121,
+        1995524
+      ],
+      "prepared_ns": [
+        788203,
+        970807,
+        1183176,
+        917066,
+        857396
+      ],
+      "cold_median_ns": 1966121,
+      "prepared_median_ns": 917066,
+      "all_receipts_equal": true,
+      "receipt_hash": "7f890809feffcbda1947d245b407106b619289f11e05cc6f7b747e7b9f83e807"
+    },
+    {
+      "id": "train-5",
+      "request_sha256": "52a6feeb3e4bcdce366de6c89936167e23affba8cd6665bbc6a7d9b5316c0594",
+      "queries": 4,
+      "cold_ns": [
+        3881855,
+        3710318,
+        3231710,
+        3178650,
+        3037217
+      ],
+      "prepared_ns": [
+        1400571,
+        1194593,
+        1285999,
+        1277978,
+        1371037
+      ],
+      "cold_median_ns": 3231710,
+      "prepared_median_ns": 1285999,
+      "all_receipts_equal": true,
+      "receipt_hash": "c94c990f1d0aee4a1181be2cf9aabc37550f9cc79404168d34d7202e6602d152"
+    },
+    {
+      "id": "train-6",
+      "request_sha256": "51f77bd9e7ff9817de89aeb0278e9a9895a68790fca8928150eea5f9c97352a3",
+      "queries": 4,
+      "cold_ns": [
+        1530156,
+        1409485,
+        1360953,
+        1481994,
+        1470997
+      ],
+      "prepared_ns": [
+        480932,
+        716866,
+        459840,
+        472920,
+        471958
+      ],
+      "cold_median_ns": 1470997,
+      "prepared_median_ns": 472920,
+      "all_receipts_equal": true,
+      "receipt_hash": "3c5ca09157b7b90bba7a35991b5600ebc72055cad5cdaffb31072bb2b7fe4bc1"
+    },
+    {
+      "id": "train-7",
+      "request_sha256": "f41b9b4ecc618c440ef6eb5dd19d89825ceb0bd3097caf826a8f8c2f9126bf2c",
+      "queries": 4,
+      "cold_ns": [
+        3330077,
+        3230208,
+        3551340,
+        3046031,
+        3001615
+      ],
+      "prepared_ns": [
+        1176655,
+        1140841,
+        1133932,
+        1181703,
+        1103967
+      ],
+      "cold_median_ns": 3230208,
+      "prepared_median_ns": 1140841,
+      "all_receipts_equal": true,
+      "receipt_hash": "892d3e95c619c6b7a517b1666f420ab37de3d11ba26a706ceca27d0cb8aaef6e"
+    },
+    {
+      "id": "train-8",
+      "request_sha256": "96e3f7cee2511ee6f65f9f58ef8bd81eba89ed73178c2fa476fb8cab568dd8e1",
+      "queries": 4,
+      "cold_ns": [
+        1773611,
+        1897227,
+        1980912,
+        1697637,
+        2106000
+      ],
+      "prepared_ns": [
+        1003386,
+        1077006,
+        918799,
+        768413,
+        787272
+      ],
+      "cold_median_ns": 1897227,
+      "prepared_median_ns": 918799,
+      "all_receipts_equal": true,
+      "receipt_hash": "c6b63d7eb3632cb3580545514f4becb9a18664d43938ec3f1316befdaf031901"
+    },
+    {
+      "id": "train-9",
+      "request_sha256": "844722c0215b6d16418e2882ac0bf5156a33096d1076b714f6a1df594e5d33d3",
+      "queries": 4,
+      "cold_ns": [
+        3263308,
+        3215705,
+        3508905,
+        3295675,
+        4142937
+      ],
+      "prepared_ns": [
+        1180311,
+        1115964,
+        1188954,
+        1117467,
+        1451919
+      ],
+      "cold_median_ns": 3295675,
+      "prepared_median_ns": 1180311,
+      "all_receipts_equal": true,
+      "receipt_hash": "69a60c81236c467a79a3380b0669a317cd498c9cb9931e4d54a6ca9afe96da18"
+    },
+    {
+      "id": "train-10",
+      "request_sha256": "76f0cdf0bc7ef76e1650eb4ee7c15a5ee924641166f6a1ef8d8866f31d009cca",
+      "queries": 4,
+      "cold_ns": [
+        1849455,
+        4420864,
+        1870507,
+        1714784,
+        1643667
+      ],
+      "prepared_ns": [
+        769766,
+        762905,
+        762955,
+        863556,
+        746210
+      ],
+      "cold_median_ns": 1849455,
+      "prepared_median_ns": 762955,
+      "all_receipts_equal": true,
+      "receipt_hash": "d6df4d1965a8ea29817ebca65a28a7a8f0332c3768022c4aada4698b1244bc3e"
+    },
+    {
+      "id": "train-11",
+      "request_sha256": "43a45f8341aae5d9245431b656ea213f430ba68b66e1dd07541e84099a0b27ad",
+      "queries": 4,
+      "cold_ns": [
+        3015796,
+        3152260,
+        3026491,
+        3022135,
+        2989947
+      ],
+      "prepared_ns": [
+        1089305,
+        1286260,
+        1125569,
+        1103086,
+        1128584
+      ],
+      "cold_median_ns": 3022135,
+      "prepared_median_ns": 1125569,
+      "all_receipts_equal": true,
+      "receipt_hash": "9cb3815073d5490d1b8f24f8c9dc9abbe3568ea74984e6acd62df76421d54f39"
+    }
+  ],
+  "evaluation": [
+    {
+      "measurement": {
+        "id": "holdout-0",
+        "request_sha256": "0e7a9ed7d711ccf841d9673269abbd43a7514b190392946d7f096ced9cec638b",
+        "queries": 6,
+        "cold_ns": [
+          6850600,
+          6735677,
+          6906780,
+          6886343,
+          6673265
+        ],
+        "prepared_ns": [
+          1780282,
+          1904508,
+          1739641,
+          1877587,
+          1752830
+        ],
+        "cold_median_ns": 6850600,
+        "prepared_median_ns": 1780282,
+        "all_receipts_equal": true,
+        "receipt_hash": "8cbfa118cc05960215001a9a07861dc2f677b4e1be2fd660e001a5522bedf57a"
+      },
+      "recommendation": "prepared",
+      "cold_pattern_quality": 0.36625564,
+      "prepared_pattern_quality": 1.0,
+      "candidate_benefit": 0.7399302250897732,
+      "inference_ns": 1352
+    },
+    {
+      "measurement": {
+        "id": "holdout-1",
+        "request_sha256": "29a20cdeb9681450a045bb8e55d23414c720494fae17844e407bda618e6b8ce9",
+        "queries": 7,
+        "cold_ns": [
+          15314242,
+          15123977,
+          15005377,
+          15159259,
+          21034846
+        ],
+        "prepared_ns": [
+          3101685,
+          3104558,
+          3070678,
+          3128304,
+          4772462
+        ],
+        "cold_median_ns": 15159259,
+        "prepared_median_ns": 3104558,
+        "all_receipts_equal": true,
+        "receipt_hash": "bf2d1733d4f55c58d39649fc89c5666204db673b9451c3fc9e28363dadb08cf9"
+      },
+      "recommendation": "prepared",
+      "cold_pattern_quality": 0.36625564,
+      "prepared_pattern_quality": 1.0,
+      "candidate_benefit": 0.7949296862069577,
+      "inference_ns": 4156
+    },
+    {
+      "measurement": {
+        "id": "holdout-2",
+        "request_sha256": "15c3c7a2e08e33da427b9c7c48ee58c6937f5db6ff3aeda5014de4235e90fadd",
+        "queries": 8,
+        "cold_ns": [
+          53954106,
+          43935952,
+          38984772,
+          38650331,
+          39721217
+        ],
+        "prepared_ns": [
+          9005624,
+          8363515,
+          7795829,
+          6884020,
+          6488407
+        ],
+        "cold_median_ns": 39721217,
+        "prepared_median_ns": 7795829,
+        "all_receipts_equal": true,
+        "receipt_hash": "dac69c2aa77334ff3022e4052ee92fe6814889f0b766eebca5c8b42d9cb30cfc"
+      },
+      "recommendation": "prepared",
+      "cold_pattern_quality": 0.36625564,
+      "prepared_pattern_quality": 1.0,
+      "candidate_benefit": 0.8036355482260275,
+      "inference_ns": 4006
+    }
+  ],
+  "micro_lora_changed": [
+    true,
+    true
+  ],
+  "patterns_stored": [
+    2,
+    2
+  ],
+  "trajectories_dropped": [
+    0,
+    0
+  ],
+  "training_elapsed_ns": 231387832,
+  "reserved_execution_work": 352500000,
+  "training_break_even_evaluation_suites": 5,
+  "inference_elapsed_ns": 9514,
+  "promoted": true,
+  "active_strategy": "prepared",
+  "rollback_strategy": "cold",
+  "static_prepared_benefit": 0.7945820837466044,
+  "learned_policy_benefit": 0.7944279636402256,
+  "limitations": "Synthetic host experiment; no universal self-improvement, predictive accuracy or learned advantage over static prepared claimed. SONA initialization/clustering and wall clocks are nondeterministic. Training cost is reported separately, not amortized away. Timings include snapshot preparation and all batch queries; parsing/process startup excluded. All receipts checked exactly. ID/content disjointness cannot establish real-world distribution independence. MicroLoRA changes are diagnostics; ReasoningBank average quality drives strategy selection. Patterns advise strategy only; source truth, rules, grants and budgets never change. Report is JSON evidence for RVF attachment, not an authenticated learning checkpoint."
+}

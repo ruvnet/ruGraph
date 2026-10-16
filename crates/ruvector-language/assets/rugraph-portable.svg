@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc">
+<title id="title">Portable execution, governed learning, and RVF data capsules</title>
+<desc id="desc">The same explicit inputs feed browser or Node WebAssembly and native Rust. The native SONA host proposes equivalent execution strategies and evaluates them before activation. RVF carries requests, receipts, and optional learning reports as data, with no embedded execution or authority.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#121a30"/></linearGradient></defs>
+<style>text{font-family:Inter,system-ui,sans-serif;fill:#edf5ff}.muted{fill:#a4b6cc}.mint{fill:#62f5cd}.blue{fill:#91a7ff}.flow{fill:none;stroke:#62f5cd;stroke-width:2;stroke-dasharray:7 24;animation:flow 6s linear infinite}.line{fill:none;stroke:#304861;stroke-width:2}@keyframes flow{to{stroke-dashoffset:-186}}@media(prefers-reduced-motion:reduce){.flow{animation:none}}</style>
+<rect width="1200" height="570" rx="24" fill="url(#bg)"/><rect x="1" y="1" width="1198" height="568" rx="23" fill="none" stroke="#2a3a53"/>
+<circle cx="42" cy="34" r="4" fill="#62f5cd"/><text x="56" y="39" font-size="15" letter-spacing="1.5" class="muted">06 / PORTABILITY + LEARNING</text>
+<text x="40" y="88" font-size="34" font-weight="650">Move execution. Preserve the evidence contract.</text>
+<text x="40" y="120" font-size="18" class="muted">Portable core semantics, host controlled adaptation, and data you can inspect.</text>
+<path class="line" d="M300 306H345V219H390M345 306V408H390M770 219H820V307H870M770 408H820V340H870"/>
+<path class="flow" d="M300 306H345V219H390M345 306V408H390M770 219H820V307H870M770 408H820V340H870"/>
+<rect x="40" y="230" width="260" height="160" rx="18" fill="#101e31" stroke="#91a7ff"/>
+<text x="62" y="271" font-size="25" font-weight="600" class="blue">Explicit inputs</text><text x="62" y="309" font-size="18" class="muted">Program + snapshot</text><text x="62" y="340" font-size="18" class="muted">Host clock + grants</text><text x="62" y="370" font-size="18" class="muted">Work + result bounds</text>
+<rect x="390" y="157" width="380" height="130" rx="18" fill="#101e31" stroke="#62f5cd"/>
+<text x="412" y="196" font-size="25" font-weight="600" class="mint">WebAssembly</text><text x="412" y="230" font-size="18" class="muted">Browser + Node, no subprocess</text><text x="412" y="260" font-size="18" class="muted">Run, replay, verify, audit</text>
+<rect x="390" y="333" width="380" height="151" rx="18" fill="#101e31" stroke="#91a7ff"/>
+<text x="412" y="372" font-size="25" font-weight="600" class="blue">Native Rust + SONA host</text><text x="412" y="408" font-size="18" class="muted">Learn candidate execution strategies</text><text x="412" y="439" font-size="18" class="muted">Evaluate separately, retain rollback</text><text x="412" y="467" font-size="16" class="muted">Unchanged rules, evidence, and authority</text>
+<rect x="870" y="231" width="290" height="178" rx="18" fill="#101e31" stroke="#62f5cd"/>
+<text x="892" y="273" font-size="25" font-weight="600" class="mint">RVF capsule</text><text x="892" y="311" font-size="18" class="muted">Request + receipt</text><text x="892" y="342" font-size="18" class="muted">Optional learning report</text><text x="892" y="377" font-size="17" class="mint">Data only. No execution.</text>
+<text x="40" y="533" font-size="18" class="muted">Promotion requires measured benefit and identical receipts. Integrity does not authenticate a source.</text>
+</svg>

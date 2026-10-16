@@ -9,3 +9,6 @@
 * [ADR-GL-007-immutable-prepared-snapshots](ADR-GL-007-immutable-prepared-snapshots.md)
 * [ADR-GL-008-exact-selection-and-borrowed-node-sets](ADR-GL-008-exact-selection-and-borrowed-node-sets.md)
 * [ADR-GL-009-standalone-repository](ADR-GL-009-standalone-repository.md)
+* [ADR-GL-010-wasm-runtime](ADR-GL-010-wasm-runtime.md)
+* [ADR-GL-011-rvf-capsules](ADR-GL-011-rvf-capsules.md)
+* [ADR-GL-012-governed-learning](ADR-GL-012-governed-learning.md)

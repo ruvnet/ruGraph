@@ -8,6 +8,8 @@ history and retains the upstream MIT license. Existing benchmark reports describ
 the upstream measurements, not new measurements of the extracted repository.
 
 The native adapter pins `ruvector-graph` and `ruvector-kge` to that exact commit.
+The optional extensions pin `ruvector-sona`, `rvf-types`, and `rvf-wire` to the
+same revision.
 Cargo resolves their transitive RuVector path dependencies within the Git checkout.
 No sibling RuVector checkout or local path override is required. The language
 core remains independent of RuVector infrastructure.

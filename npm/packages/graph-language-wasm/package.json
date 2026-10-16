@@ -1,0 +1,12 @@
+{
+  "name": "@ruvector/graph-language-wasm",
+  "version": "0.1.0",
+  "description": "RuGraph deterministic graph and evidence runtime for browsers and Node, compiled to WebAssembly",
+  "type": "module",
+  "license": "MIT",
+  "repository": {"type":"git","url":"https://github.com/ruvnet/ruGraph.git","directory":"npm/packages/graph-language-wasm"},
+  "exports": {".":{"types":"./index.d.ts","browser":"./browser.mjs","default":"./index.mjs"},"./browser":{"types":"./index.d.ts","default":"./browser.mjs"}},
+  "files": ["index.mjs","browser.mjs","boundary.mjs","index.d.ts","generated","README.md"],
+  "scripts": {"test":"node --test test/*.test.mjs","prepack":"node -e \"require('node:fs').accessSync('generated/node/runtime_bg.wasm'); require('node:fs').accessSync('generated/web/runtime_bg.wasm')\""},
+  "engines": {"node": ">=20"}
+}

@@ -22,6 +22,9 @@ jobs:
         run: |
           cargo audit --file crates/ruvector-language/Cargo.lock
           cargo audit --file crates/ruvector-language-native/Cargo.lock
+          cargo audit --file crates/ruvector-language-wasm/Cargo.lock
+          cargo audit --file crates/ruvector-language-rvf/Cargo.lock
+          cargo audit --file crates/ruvector-language-learning/Cargo.lock
   acceptance:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -41,3 +44,29 @@ jobs:
         run: python -m pip install setuptools==84.0.0 wheel==0.48.0
       - name: Validate packed npm types and installed Python wheel
         run: bash scripts/smoke-graph-language-packages.sh
+  portable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Rust and WASM target
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          rustup target add wasm32-unknown-unknown --toolchain 1.90.0
+          cargo +1.90.0 install wasm-bindgen-cli --version 0.2.105 --locked
+      - name: WASM parity and installed package
+        run: bash scripts/test-graph-language-wasm.sh
+      - name: RVF data boundaries
+        run: bash scripts/test-graph-language-rvf.sh
+      - name: SONA learning and frozen promotion gates
+        run: bash scripts/test-graph-language-learning.sh
+      - name: Native, WASM, RVF and learning interoperability
+        run: bash scripts/test-graph-language-portable.sh
+      - name: Real browser execution and native receipt comparison
+        run: python3 scripts/test-graph-language-browser.py

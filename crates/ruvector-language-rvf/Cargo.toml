@@ -1,0 +1,22 @@
+[package]
+name = "ruvector-language-rvf"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "MIT"
+description = "Bounded data-only RuGraph capsules using the upstream RVF wire format"
+repository = "https://github.com/ruvnet/ruGraph"
+
+[workspace]
+
+[dependencies]
+ruvector-language = { path = "../ruvector-language" }
+rvf-types = { git = "https://github.com/ruvnet/RuVector.git", rev = "f017d5f10c78b95843614f040f5cf22bfc1b3ac8" }
+rvf-wire = { git = "https://github.com/ruvnet/RuVector.git", rev = "f017d5f10c78b95843614f040f5cf22bfc1b3ac8" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+sha2 = "0.10"
+
+[[bin]]
+name = "rvg-capsule"
+path = "src/main.rs"

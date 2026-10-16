@@ -28,3 +28,24 @@ and disclose preparation costs and workload dimensions.
 
 See `UPSTREAM.md` before updating native dependencies. Registry releases and
 changes to package identifiers require separate release decisions.
+
+## Portable extensions
+
+Install the WASM target and binding generator, then validate each boundary:
+
+```sh
+rustup target add wasm32-unknown-unknown --toolchain 1.90.0
+cargo +1.90.0 install wasm-bindgen-cli --version 0.2.105 --locked
+bash scripts/test-graph-language-wasm.sh
+bash scripts/test-graph-language-rvf.sh
+bash scripts/test-graph-language-learning.sh
+bash scripts/test-graph-language-portable.sh
+python3 scripts/test-graph-language-browser.py
+```
+
+The browser check requires Chrome (`CHROME_BIN` can select the executable).
+It serves the generated browser module on a local ephemeral port and exercises
+compile, execution, replay, integrity, and audit before comparing with the native
+receipt when the reference binary is present. The CI job requires both.
+Generated WASM assets are ignored by Git but included by `npm pack` after building.
+Learning timings are diagnostic; CI does not require a timing candidate to win.

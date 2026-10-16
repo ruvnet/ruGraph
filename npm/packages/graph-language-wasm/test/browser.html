@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>RuGraph browser WebAssembly smoke</title>
+<pre id="result">RUNNING</pre>
+<script type="module">
+import { loadRuGraph } from '../browser.mjs';
+try {
+  const runtime = await loadRuGraph();
+  const base = '../../../../crates/ruvector-language/examples/';
+  const read = async name => {
+    const response = await fetch(base + name);
+    if (!response.ok) throw new Error(`fixture ${name}: ${response.status}`);
+    return response.text();
+  };
+  const [source, snapshot, context, options] = await Promise.all(['incident.rvg','snapshot.json','context.json','audit-options.json'].map(read));
+  const program = runtime.compile(source);
+  const request = `{"program":${program},"snapshot":${snapshot},"context":${context}}`;
+  const receipt = runtime.run(request);
+  if (runtime.replay(request, receipt) !== receipt) throw new Error('replay mismatch');
+  if (!JSON.parse(runtime.verify(receipt)).valid) throw new Error('invalid receipt');
+  const report = JSON.parse(runtime.audit(request, options));
+  if (report.baseline_receipt_hash !== JSON.parse(receipt).receipt_hash) throw new Error('audit mismatch');
+  document.querySelector('#result').textContent = `PASS ${JSON.parse(receipt).receipt_hash}`;
+} catch (error) {
+  document.querySelector('#result').textContent = `FAIL ${error.stack || error}`;
+}
+</script>
