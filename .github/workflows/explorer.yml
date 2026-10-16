@@ -1,0 +1,54 @@
+name: RuGraph Explorer
+on:
+  push:
+    branches: [main]
+    paths: ['explorer/**', 'npm/packages/graph-language-wasm/**', 'crates/ruvector-language/**', 'crates/ruvector-language-wasm/**', 'scripts/build-explorer.sh', 'scripts/test-explorer-browser.py', 'scripts/explorer-chrome.mjs', '.github/workflows/explorer.yml']
+  pull_request:
+    paths: ['explorer/**', 'npm/packages/graph-language-wasm/**', 'crates/ruvector-language/**', 'crates/ruvector-language-wasm/**', 'scripts/build-explorer.sh', 'scripts/test-explorer-browser.py', 'scripts/explorer-chrome.mjs', '.github/workflows/explorer.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: explorer-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install WASM toolchain
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          rustup target add wasm32-unknown-unknown --toolchain 1.90.0
+          cargo +1.90.0 install wasm-bindgen-cli --version 0.2.105 --locked
+      - name: Build explorer and exact WASM package
+        run: |
+          bash scripts/build-explorer.sh
+          wasm-bindgen crates/ruvector-language-wasm/target/wasm32-unknown-unknown/release/ruvector_language_wasm.wasm --target nodejs --out-dir npm/packages/graph-language-wasm/generated/node --out-name runtime
+          echo '{"type":"commonjs"}' > npm/packages/graph-language-wasm/generated/node/package.json
+      - name: Tutorial contracts and worker recovery
+        run: node --test explorer/test/lessons.test.mjs
+      - name: Real browser UI and mobile acceptance
+        run: python3 scripts/test-explorer-browser.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: explorer/dist
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy explorer
+        id: deployment
+        uses: actions/deploy-pages@v4

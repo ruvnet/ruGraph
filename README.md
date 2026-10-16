@@ -2,6 +2,8 @@
 
 # RuGraph
 
+**[Open the interactive WASM Explorer →](https://ruvnet.github.io/ruGraph/)** · [Explorer guide](explorer/README.md)
+
 **A graph programming language for AI systems that need traceable decisions. Built on RuVector.**
 
 RuGraph turns graph relationships, vector similarity, and signed observations into bounded, inspectable programs. Follow dependencies, apply explicit evidence rules, report contradictions, and trace a conclusion back to its selected observations and sources. Learned predictions have a separate type, so a model score cannot silently become evidence.
@@ -207,6 +209,19 @@ fn decide(source: &str, snapshot: &Snapshot, context: &Context)
 The native runtime captures real `GraphDB` data with `capture_quiescent` under a caller owned writer gate. `rvg` adds explicitly supplied model artifacts. `rvg-model` supports offline training, evaluation, and explicit promotion. Predictions use actual HolE or RotatE scorers and report model revision and hash. Model training and promotion happen outside program evaluation.
 
 The core binary requires a supplied provider for prediction and does not load native model artifacts. See the [native runtime guide](crates/ruvector-language-native/README.md) for build commands, capture constraints, and model examples.
+
+## Interactive browser tutorial
+
+[Launch RuGraph Explorer](https://ruvnet.github.io/ruGraph/) to write and run real graph programs in your browser. The spatial graph view follows the RuVector Explorer style, with six guided lessons covering dependencies, conflicting evidence, expiry, permissions, cosine retrieval and counterfactual audits.
+
+Change the database evidence or host clock, run the program, and select a node to inspect its sources and witnesses. Edit the program, snapshot or context; compare decisions, replay the complete receipt and export it as JSON. Every result comes from the same Rust runtime compiled to WASM, isolated in a terminable Worker. Inputs stay in browser memory.
+
+```bash
+bash scripts/build-explorer.sh
+python3 -m http.server 8000 --directory explorer/dist
+```
+
+Open `http://localhost:8000`. Follow the [build and validation guide](explorer/README.md) for toolchain setup. The [deployment workflow](.github/workflows/explorer.yml) tests the tutorial and browser interactions before publishing updates from main.
 
 ## Portable execution and learning
 
