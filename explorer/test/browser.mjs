@@ -8,6 +8,12 @@ async function run(action='run'){await wait(()=>!$(action).disabled,action+' ena
 function lesson(index){frame.contentDocument.querySelectorAll('.lesson')[index].click();}
 try{
  await wait(()=>$('runtime-status')?.textContent.includes('WASM ready'),'WASM boot');
+ assert($('welcome').open,'welcome opens on arrival');
+ $('welcome-next').click();assert($('welcome-title').textContent==='An answer needs evidence.','tour explains evidence');
+ $('welcome-motion').click();assert($('welcome').classList.contains('welcome-paused'),'welcome motion can pause');
+ $('welcome-next').click();assert($('welcome-next').textContent.includes('Start exploring'),'tour leads to programming');
+ $('welcome-next').click();assert(!$('welcome').open,'tour finishes without executing');
+ $('open-welcome').click();$('welcome-skip').click();assert(!$('welcome').open,'tour can reopen and skip');
  await run();assert($('decisions').textContent.includes('supported'),'real Worker WASM execution');
  assert($('focus-summary').textContent.includes('supported'),'selected node explains real decision');
  assert($('journey-meter').value===1,'successful lesson advances progress');
@@ -32,7 +38,7 @@ try{
  frame.contentDocument.querySelector('[data-result=receipt]').click();assert(!$('receipt-panel').hidden&&$('receipt-output').textContent.includes('receipt_hash'),'receipt inspection');
  const width=frame.contentDocument.documentElement.scrollWidth;assert(width<=1440,'desktop has no horizontal overflow');
  for(const size of [320,390,768]){
-  frame.width=String(size);await pause();await pause();assert(frame.contentDocument.documentElement.scrollWidth<=size,`no horizontal overflow at ${size}px`);
+  frame.width=String(size);await pause();await pause();$('open-welcome').click();assert($('welcome').scrollWidth<=$('welcome').clientWidth,`welcome fits ${size}px`);$('welcome-close').click();assert(frame.contentDocument.documentElement.scrollWidth<=size,`no horizontal overflow at ${size}px`);
  }
  frame.width='390';await wait(()=>$('graph').getAttribute('viewBox')==='0 0 600 750','portrait resize');
  assert($('graph').getAttribute('viewBox')==='0 0 600 750','portrait graph layout on phones');

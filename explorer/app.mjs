@@ -184,3 +184,22 @@ function renderHistory(){
 }
 for(const button of document.querySelectorAll('[data-insert]'))button.onclick=()=>{const t=$('source'),start=t.selectionStart;t.setRangeText(button.dataset.insert,start,t.selectionEnd,'end');if(['{}','()','[]'].includes(button.dataset.insert))t.setSelectionRange(start+1,start+1);t.focus({preventScroll:true});markDirty();};
 $('editor-expand').onclick=()=>{const expanded=$('source').classList.toggle('expanded');$('editor-expand').setAttribute('aria-pressed',String(expanded));$('editor-expand').textContent=expanded?'Shrink editor':'Expand editor';};
+
+// Native modal supplies keyboard focus containment and Escape dismissal.
+const welcomeSteps=[
+  ['CONNECT','A map your program can explore.','A graph is a map of things and their connections. Here, the dots are services. The lines show which services depend on each other.','An app uses an API. The API uses a database.'],
+  ['CHECK EVIDENCE','An answer needs evidence.','RuGraph checks the observations attached to each service. It can report support, disagreement, conflicting reports, or an unknown answer when evidence is missing or too old.','A database error is evidence. A glowing dot by itself is not.'],
+  ['WRITE & RUN','Change one thing. See what changes.','Start with a ready-made program. Tap Run program, choose a node, and inspect its evidence. Then edit the code or change an input and run it again.','Your program runs in this browser. Save a project to keep your work.']
+];
+let welcomeStep=0,welcomeReturn=null;
+function renderWelcome(){const s=welcomeSteps[welcomeStep];$('welcome-step').textContent=`0${welcomeStep+1} / 03 · ${s[0]}`;$('welcome-title').textContent=s[1];$('welcome-description').textContent=s[2];$('welcome-example').textContent=s[3];document.querySelector('.welcome-art').dataset.scene=String(welcomeStep);$('welcome-back').disabled=welcomeStep===0;$('welcome-next').textContent=welcomeStep===2?'Start exploring →':'Next →';document.querySelectorAll('.welcome-dots span').forEach((dot,i)=>dot.classList.toggle('current',i===welcomeStep));}
+function welcomeMotion(on){$('welcome').classList.toggle('welcome-paused',!on);$('welcome-motion').setAttribute('aria-pressed',String(on));$('welcome-motion').textContent=on?'Pause motion':'Play motion';}
+function openWelcome(){welcomeReturn=document.activeElement;welcomeStep=0;renderWelcome();welcomeMotion(!reduced.matches&&!document.body.classList.contains('motion-paused'));$('welcome').showModal();document.body.classList.add('welcome-open');$('welcome-next').focus();}
+function closeWelcome(){ $('welcome').close(); }
+$('welcome').addEventListener('close',()=>{document.body.classList.remove('welcome-open');if(welcomeReturn&&welcomeReturn!==document.body)welcomeReturn.focus({preventScroll:true});else $('open-welcome').focus({preventScroll:true});});
+$('open-welcome').onclick=openWelcome;$('welcome-close').onclick=closeWelcome;$('welcome-skip').onclick=closeWelcome;
+$('welcome-next').onclick=()=>{if(welcomeStep===2){closeWelcome();jump('stage');}else{welcomeStep++;renderWelcome();}};
+$('welcome-back').onclick=()=>{if(welcomeStep>0){welcomeStep--;renderWelcome();}};
+$('welcome-motion').onclick=()=>welcomeMotion($('welcome-motion').getAttribute('aria-pressed')!=='true');
+reduced.addEventListener('change',e=>{if(e.matches)welcomeMotion(false);});
+openWelcome();

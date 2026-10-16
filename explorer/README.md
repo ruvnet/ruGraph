@@ -39,3 +39,5 @@ Open and save version 1 `rugraph.project` JSON files. Source, snapshot and conte
 Compile exposes the actual WASM compiler output. The session retains two successful runs with exact input text and receipts, shows decision and witness lineage differences, and supports restoring or saving either input set. This history is in memory only and does not authenticate sources. Import a saved run and execute it to reproduce its receipt. Results from inputs edited during execution are discarded.
 
 Mobile programming provides paired delimiters, indentation and an expandable editor. No new external dependencies or storage services are required.
+
+The welcome tour introduces graphs, evidence and programming through three animated SVG scenes. It opens on page load, can be skipped or reopened with Quick tour, respects reduced motion, and includes a separate pause button. It stores no preference or user data and never runs a program automatically.
