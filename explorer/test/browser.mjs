@@ -37,6 +37,7 @@ try{
  $('previous-lesson').click();assert($('lesson-select').value==='0','mobile previous lesson');
  change('lesson-select','1','change');await run();assert($('decisions').textContent.includes('conflicting'),'mobile lesson picker executes');
  $('motion').click();assert($('stage').classList.contains('paused')&&frame.contentDocument.body.classList.contains('motion-paused'),'motion switch pauses scene and atmosphere');
+ assert(frame.contentDocument.getAnimations().filter(a=>a.playState==='running').length===0,'motion pause includes scanning beam');
  $('motion').click();assert(!$('stage').classList.contains('paused'),'motion resumes');
  const before=$('world').getAttribute('transform');$('zoom-in').click();assert($('world').getAttribute('transform')!==before,'touch zoom');$('fit').click();
  $('quick-run').click();await wait(()=>!$('run').disabled,'mobile quick run');assert($('notice').textContent.includes('Executed'),'persistent mobile run action');
