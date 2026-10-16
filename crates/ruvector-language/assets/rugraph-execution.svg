@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="588" viewBox="0 0 1200 588" role="img" aria-labelledby="title desc">
+<title id="title">RuGraph execution: inputs, bounded runtime, inspectable outputs</title>
+<desc id="desc">Programs, immutable snapshots, and host context enter type, capability, and bound checks. The shared Rust runtime produces four valued decisions, separately typed predictions, and receipts with hashes and work. Rust, CLI, JavaScript, TypeScript, and Python share execution semantics.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#121a30"/></linearGradient>
+ <linearGradient id="accent"><stop stop-color="#62f5cd"/><stop offset="1" stop-color="#91a7ff"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#62f5cd" stop-opacity=".12"/><stop offset="1" stop-color="#62f5cd" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8ca9cf" stroke-opacity=".035"/></pattern>
+ <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L7 4L1 7" fill="none" stroke="#58738f" stroke-width="1.3"/></marker>
+</defs>
+<style>
+ text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+ .mono{font-family:ui-monospace,'SFMono-Regular',Consolas,monospace}
+ .flow{stroke-dasharray:7 24;animation:flow 6s linear infinite}
+ .pulse{transform-box:fill-box;transform-origin:center;animation:pulse 5s ease-in-out infinite}
+ .orbit{transform-box:fill-box;transform-origin:center;animation:orbit 40s linear infinite}
+ .highlight{animation:highlight 9s ease-in-out infinite}
+ .scan{stroke-dasharray:170 710;animation:scan 9s linear infinite}
+ @keyframes flow{to{stroke-dashoffset:-186}}
+ @keyframes pulse{0%,100%{transform:scale(.92)}50%{transform:scale(1.08)}}
+ @keyframes orbit{to{transform:rotate(360deg)}}
+ @keyframes highlight{0%,30%,100%{stroke-opacity:.35}10%,22%{stroke-opacity:1}}
+ @keyframes scan{to{stroke-dashoffset:-880}}
+ @media(prefers-reduced-motion:reduce){.flow,.pulse,.orbit,.highlight,.scan{animation:none;transform:none}}
+</style>
+<rect width="1200" height="588" rx="24" fill="url(#bg)"/>
+<rect width="1200" height="588" rx="24" fill="url(#grid)"/>
+<rect x="1" y="1" width="1198" height="586" rx="23" fill="none" stroke="#2a3a53"/>
+<circle cx="42" cy="34" r="4" fill="#62f5cd" /><text x="56" y="39" font-size="15" font-weight="500" fill="#a4b6cc" letter-spacing="1.5">03 / EXECUTION</text><text x="38" y="88" font-size="34" font-weight="650" fill="#edf5ff" >One language. Explicit host control.</text><text x="40" y="119" font-size="18" font-weight="400" fill="#a4b6cc" >Text and strict JSON share one typed Rust runtime across callers.</text><rect x="40" y="157" width="320" height="280" rx="18" fill="#101e31" stroke="#91a7ff" /><text x="62" y="198" font-size="27" font-weight="650" fill="#91a7ff" >Inputs</text><text x="62" y="245" font-size="20" font-weight="600" fill="#edf5ff" >Program</text><text x="62" y="271" font-size="16" font-weight="400" fill="#a4b6cc" >text or strict JSON</text><text x="62" y="314" font-size="20" font-weight="600" fill="#edf5ff" >Snapshot</text><text x="62" y="340" font-size="16" font-weight="400" fill="#a4b6cc" >graph + observations + rules</text><text x="62" y="383" font-size="20" font-weight="600" fill="#edf5ff" >Context</text><text x="62" y="409" font-size="16" font-weight="400" fill="#a4b6cc" >clock + capabilities + limits</text><rect x="440" y="157" width="320" height="280" rx="18" fill="#101e31" stroke="#62f5cd" /><text x="462" y="198" font-size="27" font-weight="650" fill="#62f5cd" >Runtime</text><text x="462" y="245" font-size="20" font-weight="600" fill="#edf5ff" >Validate</text><text x="462" y="271" font-size="16" font-weight="400" fill="#a4b6cc" >types, grants, bounds</text><text x="462" y="314" font-size="20" font-weight="600" fill="#edf5ff" >Execute</text><text x="462" y="340" font-size="16" font-weight="400" fill="#a4b6cc" >traverse, rank, infer, assess</text><text x="462" y="383" font-size="20" font-weight="600" fill="#edf5ff" >Account</text><text x="462" y="409" font-size="16" font-weight="400" fill="#a4b6cc" >logical work + output limits</text><rect x="840" y="157" width="320" height="280" rx="18" fill="#101e31" stroke="#91a7ff" /><text x="862" y="198" font-size="27" font-weight="650" fill="#91a7ff" >Outputs</text><text x="862" y="245" font-size="20" font-weight="600" fill="#edf5ff" >Decisions</text><text x="862" y="271" font-size="16" font-weight="400" fill="#a4b6cc" >status + selected witnesses</text><text x="862" y="314" font-size="20" font-weight="600" fill="#edf5ff" >Predictions</text><text x="862" y="340" font-size="16" font-weight="400" fill="#a4b6cc" >separate typed scores</text><text x="862" y="383" font-size="20" font-weight="600" fill="#edf5ff" >Receipt</text><text x="862" y="409" font-size="16" font-weight="400" fill="#a4b6cc" >input hashes + output + work</text><path d="M360 297H440" fill="none" stroke="#58738f" stroke-width="2" class="" marker-end="url(#arrow)"/><path d="M360 297H440" fill="none" stroke="#304861" stroke-width="2" class="" /><path d="M360 297H440" fill="none" stroke="#62f5cd" stroke-width="2" class="flow" style="animation-delay:0s"/><path d="M760 297H840" fill="none" stroke="#58738f" stroke-width="2" class="" marker-end="url(#arrow)"/><path d="M760 297H840" fill="none" stroke="#304861" stroke-width="2" class="" /><path d="M760 297H840" fill="none" stroke="#62f5cd" stroke-width="2" class="flow" style="animation-delay:0s"/><rect x="40" y="465" width="1120" height="55" rx="14" fill="#0b192a" stroke="#2a4058" /><text x="600" y="500" font-size="21" font-weight="500" fill="#a4b6cc" text-anchor="middle">Rust host API  /  CLI  /  JavaScript + TypeScript  /  Python</text><text x="40" y="558" font-size="18" font-weight="400" fill="#a4b6cc" >The host supplies authority. A program cannot grant itself capabilities or choose external tools.</text>
+</svg>

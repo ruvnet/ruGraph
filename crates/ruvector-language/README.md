@@ -211,8 +211,8 @@ RuGraph is the language; RuVector supplies graph and model infrastructure. The
 native command is `rvg`, the core command is `rvg-core`, and source files use
 `.rvg`. Existing crate names, SDK package names, imports, and
 `RUVECTOR_LANGUAGE_BIN` remain stable in this branding update. Install from the
-repository using the commands above; this README does not announce a registry
-release or a separate repository.
+repository using the commands above. See the [project overview](../../README.md)
+for the complete walkthrough, replay, and audit examples.
 
 The SVG illustrations animate without scripts or external resources. They retain
 all labels as static images and disable motion when reduced motion is requested.

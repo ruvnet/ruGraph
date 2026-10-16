@@ -1,42 +1,50 @@
-![RuGraph: the graph programming language for AI. Connect knowledge, reason with evidence, trace every decision.](crates/ruvector-language/assets/rugraph-hero.svg)
+![RuGraph: give AI decisions an evidence trail. Query connected data, reason over evidence, inspect changes, and replay results.](crates/ruvector-language/assets/rugraph-hero.svg)
 
 # RuGraph
 
-**The graph programming language for AI. Built on RuVector.**
+**A graph programming language for AI systems that need traceable decisions. Built on RuVector.**
 
-Connect knowledge. Reason with evidence. Trace every decision.
+RuGraph turns graph relationships, vector similarity, and signed observations into bounded, inspectable programs. Follow dependencies, apply explicit evidence rules, report contradictions, and trace a conclusion back to its selected observations and sources. Learned predictions have a separate type, so a model score cannot silently become evidence.
 
-RuGraph combines graph traversal, vector search, learned predictions, and explicit
-evidence in bounded programs you can inspect and replay. Use it to diagnose
-service dependencies, reconcile agent memory, or assess claims whose evidence
-can conflict or expire. These are application patterns, not accuracy guarantees.
+Write a `.rvg` program or strict JSON. Execute through Rust, the CLI, JavaScript, TypeScript, or Python. Every successful run returns a receipt with its output, input hashes, logical time, and work charged.
 
-[Run an example](#run-the-example) · [Eight operations](#operations) · [Replay](#cli-and-replay) · [Native runtime](crates/ruvector-language-native/README.md) · [Specification](docs/research/graph-language/SPEC.md)
+[Quick start](#quick-start) · [Walkthrough](#walkthrough-a-service-incident) · [How it works](#how-execution-works) · [Replay](#replay-a-decision) · [Evidence audits](#ask-what-changes) · [SDKs](#use-your-language) · [Specification](docs/research/graph-language/SPEC.md)
 
-Text programs and strict JSON compile to the same typed representation. Rust,
-JavaScript, TypeScript, and Python callers share the same execution semantics.
+| If your system needs to… | RuGraph provides |
+|---|---|
+| Explain an agent memory decision | Explicit observations, sources, expiry, and selected rule lineage |
+| Investigate service dependencies | Bounded outgoing traversal and evidence rules |
+| Rank related entities or hypotheses | Exact cosine similarity and optional native KGE scoring |
+| Preserve disagreement | Separate positive and negative support with four evidence states |
+| Check sensitivity or reproduce a result | Independent removal audits and receipt replay |
 
-This is version 0.1.0 with wire schema version 1. It is an executable first
-release, not a general purpose language or a Cypher/GQL implementation.
+Version **0.1.0**, wire schema **1**. The implemented scope is immutable snapshots, eight operations, and bounded rules over the same subject. These are building blocks for applications; application accuracy depends on their data and rules.
 
-## Run the example
+## Quick start
 
-Clone this repository, then run from its root with Rust 1.90.0 installed:
+Build the core runtime with Rust 1.90.0. It runs the included graph and evidence example without a model or external AI service.
 
-```bash
+```sh
 git clone https://github.com/ruvnet/ruGraph.git
 cd ruGraph
 cargo +1.90.0 build --locked --manifest-path crates/ruvector-language/Cargo.toml
-crates/ruvector-language/target/debug/rvg-core check crates/ruvector-language/examples/incident.rvg
-crates/ruvector-language/target/debug/rvg-core run crates/ruvector-language/examples/incident.rvg \
+export RVG_CORE="$PWD/crates/ruvector-language/target/debug/rvg-core"
+
+"$RVG_CORE" check crates/ruvector-language/examples/incident.rvg
+"$RVG_CORE" run crates/ruvector-language/examples/incident.rvg \
   --snapshot crates/ruvector-language/examples/snapshot.json \
-  --context crates/ruvector-language/examples/context.json
+  --context crates/ruvector-language/examples/context.json > receipt.json
 ```
 
-The example follows outgoing `DEPENDS_ON` edges from `api`. A current positive
-`Failing` observation supports `Degraded` for `database`; an explicit negative
-observation refutes `Failing` for `cache`. Missing evidence produces `unknown`.
-Each decision includes its selected observation, source, and rule identifiers.
+`receipt.json` contains the result and its evidence trail. The walkthrough commands below use Python 3 to inspect JSON and assemble a replay request. Keep the exported `RVG_CORE` path in the same shell.
+
+## Walkthrough: a service incident
+
+The API depends on a database and a cache. Telemetry explicitly reports that the database is failing and that the cache is not failing. One rule says that a failing subject is degraded.
+
+![Incident walkthrough: retrieve api and its dependencies, read signed observations, derive database degradation, and inspect the evidence.](crates/ruvector-language/assets/rugraph-walkthrough.svg)
+
+This is the program you just ran:
 
 ```text
 program diagnose {
@@ -52,34 +60,91 @@ program diagnose {
 }
 ```
 
-The context supplies the clock, granted capabilities, work budget and result
-limit. A program can request a capability but cannot grant it to itself. At
-`now = 1100`, this fixture's observations expire and its decisions become
-`unknown` on the next execution.
+1. **Retrieve.** Select `api` and follow outgoing `DEPENDS_ON` edges for at most two hops. Traversal retains its seed nodes.
+2. **Reason.** Read recent signed `Failing` observations. Apply the named rule to each subject with positive support. Rules can chain to a fixed point.
+3. **Inspect.** Emit assessments for the evidence domain. Derived claims include the selected observation, source, and rule identifiers.
 
-![Four evidence states: supported, refuted, conflicting, and unknown.](crates/ruvector-language/assets/rugraph-evidence.svg)
+At the fixture's logical time of `1000`, the receipt contains:
 
-## Operations
+| Subject | `Failing` | `Degraded` | What supports the result |
+|---|---|---|---|
+| `database` | `supported` | `supported` | `db-error-1` from `telemetry-a`; the rule derives `Degraded` |
+| `cache` | `refuted` | `unknown` | `cache-healthy-1` explicitly refutes `Failing`; no rule refutes `Degraded` |
+| `api` | `unknown` | `unknown` | No matching observation or applicable rule supports either claim |
 
-| Text form | Input | Output |
+Inspect those six assessments:
+
+```sh
+python3 - <<'PY'
+import json
+from pathlib import Path
+receipt = json.loads(Path('receipt.json').read_text())
+for item in receipt['output']['items']:
+    print(item['subject'], item['predicate'], item['status'])
+PY
+```
+
+The fixture's observations expire at time `1100`. Running with that clock produces `unknown` for all six assessments. The rule does not infer degradation of the API from degradation of its dependency; it applies to the same subject.
+
+## Evidence that preserves uncertainty
+
+![Four independent evidence states: supported has positive support, refuted has negative support, conflicting has both, and unknown has neither.](crates/ruvector-language/assets/rugraph-evidence.svg)
+
+A missing observation does not mean false. Conflicting observations remain visible. Expiry or deletion retracts conclusions on the next execution because each snapshot is evaluated afresh. Evidence states are categories, not probabilities or model confidence scores.
+
+`predict` returns a typed prediction batch. Predictions cannot feed `infer` or `assess`; observations and explicit rules determine evidence decisions.
+
+## How execution works
+
+![Execution diagram: explicit program, snapshot, and host context enter the bounded Rust runtime, producing decisions, separately typed predictions, and a receipt.](crates/ruvector-language/assets/rugraph-execution.svg)
+
+The host supplies the snapshot, clock, granted capabilities, work budget, and result limit. A program declares the capabilities it needs but cannot grant itself authority. Exceeding a bound fails the run without a partial successful receipt.
+
+The Rust core performs no network, filesystem, shell, model download, or external provider operations. CLI and SDK hosts own file and process access. A trusted host can supply a predictor; the native adapter uses real RuVector graph and KGE implementations.
+
+### Eight operations
+
+| Operation | Example | Result |
 |---|---|---|
-| `nodes "Service"` | Snapshot | Node set |
-| `select ["api"]` | Snapshot | Node set |
-| `traverse n "DEPENDS_ON" depth 2` | Node set | Node set including seeds |
-| `similar n [0.1, 0.2] top 5` | Node set | Nodes ranked by exact cosine |
-| `observe n "Failing" within 300` | Node set | Signed observations and evidence domain |
-| `infer [e] using ["failure_rule"]` | Observed or derived evidence | Signed Horn closure |
-| `predict n "Cause" model "incident_v1" top 3` | Node set | Typed prediction batch |
-| `assess e` | Observed or derived evidence | Four valued decisions |
+| Find nodes | `nodes "Service"` | Nodes with the requested label |
+| Select identities | `select ["api"]` | Explicit node set |
+| Follow relationships | `traverse n "DEPENDS_ON" depth 2` | Reachable nodes, including seeds |
+| Rank similarity | `similar n [0.1, 0.2] top 5` | Nodes ranked by exact cosine |
+| Read observations | `observe n "Failing" within 300` | Signed observations and evidence domain |
+| Apply rules | `infer [e] using ["failure_rule"]` | Signed Horn closure over the same subject |
+| Score predictions | `predict n "Cause" model "incident_v1" top 3` | Separate typed prediction batch |
+| Assess evidence | `assess e` | Four valued decisions and selected witnesses |
 
-Predictions cannot flow into `infer` or `assess`. A score is not an observation.
-Both positive and negative support yields `conflicting`; neither yields
-`unknown`. Rules require explicit signed premises and do not infer falsity from
-absence. Rules operate on the same subject and can chain to a fixed point.
+Full syntax, validation rules, and limits are in the [language specification](docs/research/graph-language/SPEC.md).
 
-![Explicit program, snapshot, context, and model inputs produce a receipt that can be recomputed and compared.](crates/ruvector-language/assets/rugraph-replay.svg)
+## Replay a decision
 
-## CLI and replay
+![Replay diagram: pin inputs, recompute with a compatible environment, and compare the complete receipt. Integrity does not establish source authenticity.](crates/ruvector-language/assets/rugraph-replay.svg)
+
+Build a request from the same program and fixture, then replay the saved receipt:
+
+```sh
+python3 - <<'PY'
+import json
+import os
+import subprocess
+from pathlib import Path
+examples = Path('crates/ruvector-language/examples')
+program = json.loads(subprocess.check_output(
+    [os.environ['RVG_CORE'], 'compile', str(examples / 'incident.rvg')], text=True))
+request = {
+    'program': program,
+    'snapshot': json.loads((examples / 'snapshot.json').read_text()),
+    'context': json.loads((examples / 'context.json').read_text()),
+}
+Path('request.json').write_text(json.dumps(request))
+PY
+"$RVG_CORE" replay --request request.json --receipt receipt.json
+```
+
+`verify` checks a receipt's checksum. `replay` recomputes and requires the complete receipt to match. Neither authenticates a source or proves an observation true. Archive the inputs, model artifact if used, language version, toolchain, and target; replay needs compatible floating point behavior.
+
+### CLI reference
 
 ```text
 rvg-core check PROGRAM
@@ -88,45 +153,42 @@ rvg-core run PROGRAM --snapshot SNAPSHOT --context CONTEXT
 rvg-core run --request REQUEST
 rvg-core replay --request REQUEST --receipt RECEIPT
 rvg-core verify RECEIPT
+rvg-core audit --request REQUEST --audit-options OPTIONS
 ```
 
-Use `-` for one stdin input. `PROGRAM` is text or strict program JSON. `REQUEST`
-is `{ "program": ..., "snapshot": ..., "context": ... }`. Successful execution
-prints one JSON receipt. Errors print structured JSON to stderr and exit with
-code 2. No partial successful result is emitted when a bound is exceeded.
+Programs accept text or strict program JSON. Requests contain `program`, `snapshot`, and `context`. Use `-` for one stdin input. Success writes JSON to stdout. Errors write structured JSON to stderr and exit with code `2`.
 
-`compile` produces canonical program JSON. The receipt identifies program,
-snapshot and context hashes, logical time, work charged, output, and its own
-SHA256 checksum. `verify` checks checksum integrity only. `replay` recomputes
-the result and requires the complete receipt to match. Neither command proves
-the truth of an observation or authenticates its source.
+## Ask what changes
 
-Replay requires identical inputs and model artifact, the same language version,
-and compatible floating point behavior. Pin the toolchain and target when
-archiving receipts. A new snapshot is recomputed from scratch, which retracts
-conclusions when observations are deleted or expire.
+Remove one observation, source, or edge in a counterfactual trial, then inspect the changed decisions and selected witnesses. Every trial starts from the original snapshot.
 
-## Counterfactual evidence audits
+![Audit diagram: independently remove db-error-1 or telemetry-a; both trials change database Failing and Degraded from supported to unknown.](crates/ruvector-language/assets/rugraph-audit.svg)
 
-Ask what changes if a source disappears or a graph edge is removed. RuGraph
-recomputes each intervention independently and reports changed decisions, witness
-changes, and receipt hashes. Redundant evidence can preserve a conclusion even
-when the selected witness is removed. Missing retrieval results are distinct
-from an `unknown` assessment.
+Reuse the request from the replay walkthrough:
 
-```text
-rvg-core audit --request request.json --audit-options options.json
+```sh
+"$RVG_CORE" audit --request request.json \
+  --audit-options crates/ruvector-language/examples/audit-options.json > audit.json
 ```
 
-The same operation is available as `client.audit(request, options)` in both SDKs.
-Audits accept 1 to 64 explicit observation, source or edge interventions, reserve
-an aggregate execution budget, and exclude model predictions. They measure
-sensitivity to supplied inputs, not real world causality or source authenticity.
+This fixture includes three independent removals: `db-error-1`, `telemetry-a`, and the `api-db` edge. Each removes the support retrieved for the database claims. Redundant evidence in other snapshots can preserve a conclusion even when its selected witness disappears.
 
-[Run the agent memory application and benchmark](docs/research/graph-language/FRONTIER.md)
-· [Audit architecture](docs/adr/ADR-GL-006-bounded-counterfactual-audits.md)
+Audits support 1 to 64 interventions with an explicit aggregate execution budget and no prediction steps. Reports distinguish a missing decision entry from an `unknown` assessment. They measure sensitivity to supplied inputs; they do not establish real world causality.
 
-## Use from Rust
+Both SDKs expose `client.audit(request, options)`. Explore the [agent memory application and benchmark](docs/research/graph-language/FRONTIER.md) or read the [audit ADR](docs/adr/ADR-GL-006-bounded-counterfactual-audits.md).
+
+## Use your language
+
+| Interface | Entry point | Guide |
+|---|---|---|
+| Rust | `ruvector_language::runtime::execute` | [Core library](crates/ruvector-language/README.md) |
+| CLI | `rvg-core`, native `rvg`, and offline `rvg-model` | [Native runtime](crates/ruvector-language-native/README.md) |
+| JavaScript / TypeScript | `RuGraph` from `@ruvector/graph-language` | [SDK and local installation](npm/packages/graph-language/README.md) |
+| Python | `RuGraph` from `ruvector_language` | [SDK and local installation](python/ruvector-language/README.md) |
+
+SDKs invoke a trusted executable with bounded input, output, and timeouts. They do not automatically install a runtime or download a model. JavaScript rejects integers outside its safe range; Python supports full Rust `u64` timestamps. Existing crate names, package names, imports, and `RUVECTOR_LANGUAGE_BIN` remain stable. Install from this repository using the linked guides.
+
+### Rust embedding
 
 ```rust,ignore
 use ruvector_language::{parser, runtime, Context, Snapshot};
@@ -139,15 +201,15 @@ fn decide(source: &str, snapshot: &Snapshot, context: &Context)
 }
 ```
 
-The library uses an explicit snapshot and clock. It performs no network,
-filesystem, shell, model download or external provider operations. The CLI owns
-file access. A host can supply a trusted `Predictor`; the native adapter uses
-RuVector's real KGE implementation.
+### Native graph and model support
 
-## Repeated Rust host queries
+The native runtime captures real `GraphDB` data with `capture_quiescent` under a caller owned writer gate. `rvg` adds explicitly supplied model artifacts. `rvg-model` supports offline training, evaluation, and explicit promotion. Predictions use actual HolE or RotatE scorers and report model revision and hash. Model training and promotion happen outside program evaluation.
 
-Prepare an immutable snapshot once to reuse validated indexes and its canonical
-hash. Each query still checks its program, clock, capabilities and limits.
+The core binary requires a supplied provider for prediction and does not load native model artifacts. See the [native runtime guide](crates/ruvector-language-native/README.md) for build commands, capture constraints, and model examples.
+
+## Performance with evidence
+
+Rust hosts can prepare an immutable snapshot once to reuse validated indexes and its canonical hash:
 
 ```rust,ignore
 use ruvector_language::runtime::PreparedSnapshot;
@@ -155,78 +217,25 @@ let prepared = PreparedSnapshot::new(&snapshot)?;
 let receipt = prepared.execute(&program, &context, None)?;
 ```
 
-Prepared and ordinary execution produce identical receipts and logical work
-charges. This optimizes actual repeated-query cost without changing budget
-semantics. The snapshot remains immutably borrowed; rebuild preparation after
-updates. Models are invoked anew on every query. Preparation is currently a Rust
-host API; CLI/SDK subprocesses and counterfactual trials retain full execution.
-[Design and bounds](docs/adr/ADR-GL-007-immutable-prepared-snapshots.md).
+Prepared execution produces the same receipts and logical work charges as ordinary execution. Each query still checks its program, clock, grants, and limits. Rebuild preparation after snapshot updates. This API currently applies to Rust hosts; CLI and SDK calls use subprocess execution.
 
-Exact cosine ranking selects the top K before sorting the winners, and
-intermediate node sets borrow snapshot IDs. Every candidate is still validated
-and scored. Deterministic work and byte limits retain their prior conservative
-charges, so existing receipts remain compatible. See the
-[paired performance evidence](docs/research/graph-language/ACCEPTANCE.md).
+Exact cosine ranking selects top K before sorting winners; intermediate node sets borrow snapshot IDs. On the recorded synthetic workload with **4,096 nodes, two dimensional vectors, and K = 4**, this change reduced the prepared query median from **863.746 µs to 496.034 µs**, or **42.57%**. That comparison used three alternating process pairs with five warmups and thirty samples per process. It excludes snapshot preparation and does not establish high dimensional throughput or a general cold execution speedup.
 
-## Native graph and model support
+See [raw paired samples](docs/research/graph-language/selection-borrowing-benchmark.json), the [acceptance report](docs/research/graph-language/ACCEPTANCE.md), and [performance ADRs](docs/adr/INDEX.md).
 
-[The native crate](crates/ruvector-language-native/README.md) provides `rvg`, which
-shares the same CLI and adds `--models MODELS.json`, plus `rvg-model` for offline
-training, evaluation and explicit promotion. It captures a real `GraphDB`
-through `capture_quiescent` under a caller owned writer gate. KGE ranking uses
-the actual HolE or RotatE scorer and reports model revision and hash.
+## Validate and contribute
 
-The minimal `rvg-core` binary reports `PROVIDER_UNAVAILABLE` for prediction
-without a provider, or `MODEL_UNAVAILABLE` if asked to load models. Model
-artifacts and executable paths are trusted host configuration.
-Models are not trained or promoted during program evaluation.
+The complete suite covers **54 core, 10 native, 13 JavaScript, and 13 Python tests**, plus formatting, strict Clippy, package installation, TypeScript declarations, replay, and evidence audits.
 
-## JavaScript, TypeScript and Python
-
-Process bindings use the same executable and wire schema:
-
-* [JavaScript and TypeScript SDK](npm/packages/graph-language/README.md)
-* [Python SDK](python/ruvector-language/README.md)
-
-## Validation and scope
-
-Run the complete acceptance command from the repository root:
-
-```bash
+```sh
 bash scripts/test-graph-language.sh
 bash scripts/smoke-graph-language-packages.sh
 ```
 
-See the [specification](docs/research/graph-language/SPEC.md),
-[acceptance report](docs/research/graph-language/ACCEPTANCE.md), and
-[architecture decisions](docs/adr/ADR-GL-001-rugraph-language-and-ir.md).
+[Build prerequisites](CONTRIBUTING.md) · [CI](https://github.com/ruvnet/ruGraph/actions/workflows/graph-language.yml) · [Specification](docs/research/graph-language/SPEC.md) · [Architecture decisions](docs/adr/INDEX.md) · [Security review](docs/research/graph-language/SECURITY-REVIEW.md)
 
-Version 1 uses immutable snapshots, exhaustive vector/KGE ranking and bounded
-same subject rules. It does not include graph mutation, arbitrary tools, LLM
-calls, distributed execution, incremental truth maintenance, learned query
-planning or calibrated uncertainty. Exact ranking describes evaluation of the
-chosen scorer, not predictive accuracy. No research novelty claim is made.
+RuGraph owns the language, adapters, and SDKs. RuVector provides graph and model infrastructure at an immutable Git revision. [Source provenance and update policy](UPSTREAM.md) document the extraction and dependency pin.
 
-## Project identity and compatibility
+This release uses exhaustive vector and KGE ranking and rules over the same subject. Graph mutation, arbitrary tools, LLM calls, distributed execution, incremental truth maintenance, and calibrated uncertainty are outside its current scope. Exact scorer evaluation is not a claim of predictive accuracy or research novelty.
 
-RuGraph is the language; RuVector supplies graph and model infrastructure. The
-native command is `rvg`, the core command is `rvg-core`, and source files use
-`.rvg`. Existing crate names, SDK package names, imports, and
-`RUVECTOR_LANGUAGE_BIN` remain stable in this branding update. Install from the
-repository using the commands above; this README does not announce a registry
-release or a separate repository.
-
-The SVG illustrations animate without scripts or external resources. They retain
-all labels as static images and disable motion when reduced motion is requested.
-
-Licensed under [MIT](LICENSE).
-
-## Standalone repository
-
-RuGraph owns the language, native adapters, SDKs, examples, and acceptance suite.
-RuVector supplies graph and model infrastructure through an immutable Git revision.
-See [UPSTREAM.md](UPSTREAM.md) for provenance and the dependency update policy.
-
-Run `bash scripts/test-graph-language.sh` and
-`bash scripts/smoke-graph-language-packages.sh` to validate the complete stack.
-The package names remain stable; no registry publication is implied.
+The SVGs are self contained, retain their labels without animation, and respect reduced motion preferences. Licensed under [MIT](LICENSE).

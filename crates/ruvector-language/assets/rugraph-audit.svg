@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="527" viewBox="0 0 1200 527" role="img" aria-labelledby="title desc">
+<title id="title">Counterfactual audit: independently remove an observation or source</title>
+<desc id="desc">The incident baseline supports database Failing and Degraded. Removing db-error-1 or telemetry-a in independent trials makes both claims unknown. Audits report changed decisions and selected evidence lineage under explicit work limits; they do not establish real world causality.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#121a30"/></linearGradient>
+ <linearGradient id="accent"><stop stop-color="#62f5cd"/><stop offset="1" stop-color="#91a7ff"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#62f5cd" stop-opacity=".12"/><stop offset="1" stop-color="#62f5cd" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8ca9cf" stroke-opacity=".035"/></pattern>
+ <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L7 4L1 7" fill="none" stroke="#58738f" stroke-width="1.3"/></marker>
+</defs>
+<style>
+ text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+ .mono{font-family:ui-monospace,'SFMono-Regular',Consolas,monospace}
+ .flow{stroke-dasharray:7 24;animation:flow 6s linear infinite}
+ .pulse{transform-box:fill-box;transform-origin:center;animation:pulse 5s ease-in-out infinite}
+ .orbit{transform-box:fill-box;transform-origin:center;animation:orbit 40s linear infinite}
+ .highlight{animation:highlight 9s ease-in-out infinite}
+ .scan{stroke-dasharray:170 710;animation:scan 9s linear infinite}
+ @keyframes flow{to{stroke-dashoffset:-186}}
+ @keyframes pulse{0%,100%{transform:scale(.92)}50%{transform:scale(1.08)}}
+ @keyframes orbit{to{transform:rotate(360deg)}}
+ @keyframes highlight{0%,30%,100%{stroke-opacity:.35}10%,22%{stroke-opacity:1}}
+ @keyframes scan{to{stroke-dashoffset:-880}}
+ @media(prefers-reduced-motion:reduce){.flow,.pulse,.orbit,.highlight,.scan{animation:none;transform:none}}
+</style>
+<rect width="1200" height="527" rx="24" fill="url(#bg)"/>
+<rect width="1200" height="527" rx="24" fill="url(#grid)"/>
+<rect x="1" y="1" width="1198" height="525" rx="23" fill="none" stroke="#2a3a53"/>
+<circle cx="42" cy="34" r="4" fill="#62f5cd" /><text x="56" y="39" font-size="15" font-weight="500" fill="#a4b6cc" letter-spacing="1.5">05 / AUDIT</text><text x="38" y="88" font-size="34" font-weight="650" fill="#edf5ff" >What changes if this evidence disappears?</text><text x="40" y="119" font-size="18" font-weight="400" fill="#a4b6cc" >Recompute independent removals. Compare decisions and selected witnesses.</text><rect x="40" y="175" width="298" height="200" rx="18" fill="#101e31" stroke="#91a7ff" /><text x="62" y="218" font-size="25" font-weight="650" fill="#91a7ff" >Baseline snapshot</text><text x="62" y="263" font-size="17" font-weight="400" fill="#a4b6cc" >Observation: db-error-1</text><text x="62" y="295" font-size="17" font-weight="400" fill="#a4b6cc" >Source: telemetry-a</text><text x="62" y="337" font-size="19" font-weight="600" fill="#62f5cd" >database: supported</text><path d="M338 275H395V209H455" fill="none" stroke="#304861" stroke-width="2" class="" /><path d="M338 275H395V209H455" fill="none" stroke="#62f5cd" stroke-width="2" class="flow" style="animation-delay:-2s"/><path d="M338 275H395V354H455" fill="none" stroke="#304861" stroke-width="2" class="" /><path d="M338 275H395V354H455" fill="none" stroke="#62f5cd" stroke-width="2" class="flow" style="animation-delay:-2s"/><path d="M745 209H820V275H870" fill="none" stroke="#304861" stroke-width="2" class="" /><path d="M745 209H820V275H870" fill="none" stroke="#62f5cd" stroke-width="2" class="flow" style="animation-delay:-2s"/><path d="M745 354H820V275H870" fill="none" stroke="#304861" stroke-width="2" class="" /><path d="M745 354H820V275H870" fill="none" stroke="#62f5cd" stroke-width="2" class="flow" style="animation-delay:-2s"/><rect x="455" y="155" width="290" height="108" rx="18" fill="#101e31" stroke="#62f5cd" class="highlight" style="animation-delay:0s"/><text x="477" y="195" font-size="22" font-weight="600" fill="#62f5cd" >Remove observation</text><text x="477" y="232" font-size="18" font-weight="400" fill="#a4b6cc" class="mono">db-error-1</text><rect x="455" y="300" width="290" height="108" rx="18" fill="#101e31" stroke="#91a7ff" class="highlight" style="animation-delay:-4.5s"/><text x="477" y="340" font-size="22" font-weight="600" fill="#91a7ff" >Remove source</text><text x="477" y="377" font-size="18" font-weight="400" fill="#a4b6cc" class="mono">telemetry-a</text><rect x="870" y="175" width="290" height="200" rx="18" fill="#101e31" stroke="#ffd28a" /><text x="892" y="218" font-size="25" font-weight="650" fill="#ffd28a" >Compare changes</text><text x="892" y="263" font-size="20" font-weight="600" fill="#edf5ff" >Each trial: unknown</text><text x="892" y="301" font-size="18" font-weight="400" fill="#a4b6cc" >Failing + Degraded</text><text x="892" y="337" font-size="17" font-weight="400" fill="#a4b6cc" >Selected lineage changes</text><text x="40" y="461" font-size="18" font-weight="400" fill="#a4b6cc" >Each trial starts from the original snapshot. Trials do not accumulate deletions.</text><text x="40" y="493" font-size="18" font-weight="400" fill="#a4b6cc" >Sensitivity to supplied inputs is not proof of real world causality.</text>
+</svg>
