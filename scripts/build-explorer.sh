@@ -15,6 +15,8 @@ import hashlib,json,subprocess
 from pathlib import Path
 p=Path('explorer/dist')
 revision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+html=p/'index.html'
+html.write_text(html.read_text().replace('./style.css',f'./style.css?v={revision}').replace('./app.mjs',f'./app.mjs?v={revision}'))
 assets={str(f.relative_to(p)):hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted(p.rglob('*')) if f.is_file()}
 (p/'build.json').write_text(json.dumps({'revision':revision,'wasm_bindgen':'0.2.105','assets':assets},indent=2)+'\n')
 (p/'.nojekyll').touch()
